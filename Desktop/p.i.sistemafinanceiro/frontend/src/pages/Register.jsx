@@ -32,7 +32,9 @@ const Register = () => {
       await register(formData.username, formData.email, formData.password);
       navigate('/login');
     } catch (err) {
-      setError(err.response?.data?.msg || 'Erro ao cadastrar. Tente novamente.');
+      console.error('Erro detalhado no cadastro:', err);
+      const errorMsg = err.response?.data?.msg || `Erro de conexão: ${err.message}. Verifique se o backend está online.`;
+      setError(errorMsg);
     } finally {
       setIsLoading(false);
     }

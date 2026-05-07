@@ -20,8 +20,12 @@ def register():
     user = User(username=data['username'], email=data['email'])
     user.set_password(data['password'])
     
-    db.session.add(user)
-    db.session.commit()
+    try:
+        db.session.add(user)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"msg": f"Erro no banco de dados: {str(e)}"}), 500
     
     return jsonify({"msg": "User created successfully"}), 201
 

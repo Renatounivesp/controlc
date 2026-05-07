@@ -12,7 +12,11 @@ def create_app():
     app = Flask(__name__)
 
     # Configuration
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///database.db')
+    db_url = os.getenv('DATABASE_URL', 'sqlite:///database.db')
+    if db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
+    
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'super-secret-key')
 
@@ -39,9 +43,11 @@ def create_app():
 
     return app
 
-if __name__ == '__main__':
-    app = create_app()
-    with app.app_context():
+app = create_app()
+
+# No Render/Produção, a inicialização pode ser feita aqui ou via script de migração
+with app.app_context():
+    try:
         db.create_all()
         # Seed categories if empty
         if Category.query.count() == 0:
@@ -55,5 +61,11 @@ if __name__ == '__main__':
             ]
             db.session.bulk_save_objects(default_categories)
             db.session.commit()
-    
-    app.run(debug=True)
+            print("Categorias iniciais criadas com sucesso!")
+    except Exception as e:
+        print(f"Aviso: Erro ao inicializar banco de dados: {e}")
+
+if __name__ == '__main__':
+    port = int(os.getenv('PORT', 5000))
+    print(f"Iniciando servidor na porta {port}...")
+    app.run(host='0.0.0.0', port=port, debug=False)

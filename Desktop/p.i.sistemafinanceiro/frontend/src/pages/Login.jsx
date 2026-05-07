@@ -19,7 +19,9 @@ const Login = () => {
       await login(email, password);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.msg || 'Erro ao fazer login. Verifique suas credenciais.');
+      console.error('Erro detalhado no login:', err);
+      const errorMsg = err.response?.data?.msg || `Erro de conexão: ${err.message}. Verifique sua internet e o backend.`;
+      setError(errorMsg);
     } finally {
       setIsLoading(false);
     }

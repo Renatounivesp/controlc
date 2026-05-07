@@ -80,9 +80,9 @@ const Transactions = () => {
     setEditingId(null);
   };
 
-  const filteredTransactions = transactions.filter(t => 
-    t.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredTransactions = Array.isArray(transactions) ? transactions.filter(t => 
+    t.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  ) : [];
 
   return (
     <motion.div 
@@ -161,8 +161,8 @@ const Transactions = () => {
                     </td>
                     <td className="px-8 py-6">
                       <span className="px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider" 
-                            style={{ backgroundColor: `${t.category.color}15`, color: t.category.color }}>
-                        {t.category.name}
+                            style={{ backgroundColor: `${t.category?.color || '#6b7280'}15`, color: t.category?.color || '#6b7280' }}>
+                        {t.category?.name || 'Sem Categoria'}
                       </span>
                     </td>
                     <td className="px-8 py-6">
@@ -175,7 +175,7 @@ const Transactions = () => {
                         "text-lg font-black",
                         t.type === 'income' ? "text-green-600" : "text-slate-900 dark:text-white"
                       )}>
-                        {t.type === 'income' ? '+' : '-'} R$ {t.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        {t.type === 'income' ? '+' : '-'} R$ {t.amount?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || '0,00'}
                       </p>
                     </td>
                     <td className="px-8 py-6 text-right">

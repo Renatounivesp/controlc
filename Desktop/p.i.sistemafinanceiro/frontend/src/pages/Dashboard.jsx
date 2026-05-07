@@ -123,7 +123,7 @@ const Dashboard = () => {
               <Wallet className="w-5 h-5" />
               <span className="font-semibold uppercase tracking-wider text-xs">Saldo Disponível</span>
             </div>
-            <h2 className="text-6xl font-black">R$ {stats.totals.balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</h2>
+            <h2 className="text-6xl font-black">R$ {stats?.totals?.balance?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || '0,00'}</h2>
             <div className="flex items-center gap-2 text-green-300 font-bold text-lg">
               <TrendingUp className="w-5 h-5" />
               <span>+12.5% este mês</span>
@@ -132,11 +132,11 @@ const Dashboard = () => {
           <div className="grid grid-cols-2 gap-6 border-l border-white/20 pl-10 hidden md:grid">
             <div>
               <p className="text-white/60 text-sm font-bold uppercase mb-1">Entradas</p>
-              <p className="text-2xl font-bold">R$ {stats.totals.income.toLocaleString('pt-BR')}</p>
+              <p className="text-2xl font-bold">R$ {stats?.totals?.income?.toLocaleString('pt-BR') || '0,00'}</p>
             </div>
             <div>
               <p className="text-white/60 text-sm font-bold uppercase mb-1">Saídas</p>
-              <p className="text-2xl font-bold">R$ {stats.totals.expenses.toLocaleString('pt-BR')}</p>
+              <p className="text-2xl font-bold">R$ {stats?.totals?.expenses?.toLocaleString('pt-BR') || '0,00'}</p>
             </div>
           </div>
         </div>
@@ -202,16 +202,16 @@ const Dashboard = () => {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={stats.categories}
+                  data={stats?.categories || []}
                   innerRadius={80}
                   outerRadius={100}
                   paddingAngle={8}
                   dataKey="value"
                   stroke="none"
                 >
-                  {stats.categories.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
+                    {stats?.categories?.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
                 </Pie>
                 <Tooltip />
               </PieChart>
@@ -222,7 +222,7 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="space-y-3 mt-6">
-            {stats.categories.map((cat, i) => (
+            {stats?.categories?.map((cat, i) => (
               <div key={cat.name} className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="w-3 h-3 rounded-full" style={{backgroundColor: COLORS[i % COLORS.length]}} />

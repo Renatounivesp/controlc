@@ -8,7 +8,16 @@ import Goals from './pages/Goals';
 import Layout from './components/Layout';
 
 const ProtectedRoute = ({ children }) => {
-  // Ignorando autenticação para visualização rápida como solicitado
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return <div className="flex items-center justify-center h-screen bg-slate-900 text-white font-medium">Carregando...</div>;
+  }
+  
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+  
   return children;
 };
 
