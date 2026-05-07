@@ -55,18 +55,54 @@ const Transactions = () => {
         console.warn('Backend offline, using mock transactions');
       }
     };
-    fetchData();
-  }, []);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    // Para mock, apenas simula sucesso
-    setTimeout(() => {
+    try {
+      if (editingId) {
+        await api.put(`/transactions/${editingId}`, formData);
+      } else {
+        await api.post('/transactions', formData);
+      }
       setIsModalOpen(false);
-      setSubmitting(false);
       resetForm();
-    }, 500);
+      fetchTransactions(); // Refresh the list
+    } catch (err) {
+      console.error('Erro ao salvar transação:', err);
+      alert('Não foi possível salvar a transação. Verifique os dados.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const fetchTransactions = async () => {
+    setLoading(true);
+    try {
+      const [transRes, catRes] = await Promise.all([
+        api.get('/transactions'),
+        api.get('/transactions/categories')
+      ]);
+      setTransactions(transRes.data);
+      setCategories(catRes.data);
+    } catch (err) {
+      console.warn('Erro ao buscar dados, usando mocks');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Tem certeza que deseja excluir esta transação?')) return;
+    try {
+      await api.delete(`/transactions/${id}`);
+      fetchTransactions();
+    } catch (err) {
+      alert('Erro ao excluir transação');
+    }
   };
 
   const resetForm = () => {
@@ -179,9 +215,30 @@ const Transactions = () => {
                       </p>
                     </td>
                     <td className="px-8 py-6 text-right">
-                      <button className="p-2 text-slate-300 hover:text-slate-600 dark:hover:text-slate-400 transition-colors">
-                        <MoreVertical className="w-5 h-5" />
-                      </button>
+                      <div className="flex gap-2 justify-end">
+                        <button 
+                          onClick={() => {
+                            setEditingId(t.id);
+                            setFormData({
+                              description: t.description,
+                              amount: t.amount,
+                              type: t.type,
+                              category_id: t.category.id,
+                              date: t.date.split('T')[0]
+                            });
+                            setIsModalOpen(true);
+                          }}
+                          className="p-2 text-slate-400 hover:text-primary-600 transition-colors"
+                        >
+                          <Edit2 className="w-5 h-5" />
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(t.id)}
+                          className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </div>
                     </td>
                   </motion.tr>
                 ))}
@@ -219,21 +276,47 @@ const Transactions = () => {
                   </button>
                 </div>
 
-                <input type="text" placeholder="O que você comprou ou recebeu?" className="input-premium" required />
+                <input 
+                  type="text" 
+                  placeholder="O que você comprou ou recebeu?" 
+                  className="input-premium" 
+                  value={formData.description}
+                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  required 
+                />
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="relative">
                     <span className="absolute left-5 top-1/2 -translate-y-1/2 font-bold text-slate-400">R$</span>
-                    <input type="number" placeholder="0,00" className="input-premium pl-12" required />
+                    <input 
+                      type="number" 
+                      step="0.01"
+                      placeholder="0,00" 
+                      className="input-premium pl-12" 
+                      value={formData.amount}
+                      onChange={(e) => setFormData({...formData, amount: e.target.value})}
+                      required 
+                    />
                   </div>
-                  <input type="date" className="input-premium" required />
+                  <input 
+                    type="date" 
+                    className="input-premium" 
+                    value={formData.date}
+                    onChange={(e) => setFormData({...formData, date: e.target.value})}
+                    required 
+                  />
                 </div>
 
-                <select className="input-premium appearance-none">
+                <select 
+                  className="input-premium appearance-none"
+                  value={formData.category_id}
+                  onChange={(e) => setFormData({...formData, category_id: e.target.value})}
+                  required
+                >
                   <option value="">Selecione a Categoria</option>
-                  <option value="1">Alimentação</option>
-                  <option value="2">Transporte</option>
-                  <option value="3">Lazer</option>
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
                 </select>
 
                 <button type="submit" disabled={submitting} className="btn-premium w-full py-5 text-lg mt-4">

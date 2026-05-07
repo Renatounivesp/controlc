@@ -16,29 +16,63 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const MOCK_GOALS = [
-  { id: 1, name: 'Viagem Japão', target_amount: 15000, current_amount: 4500, deadline: '2027-12-01', progress: 30 },
-  { id: 2, name: 'Reserva de Emergência', target_amount: 20000, current_amount: 18500, deadline: null, progress: 92.5 },
-  { id: 3, name: 'Novo iPhone', target_amount: 8000, current_amount: 8000, deadline: '2026-08-20', progress: 100 },
-];
+  const [formData, setFormData] = useState({
+    name: '',
+    target_amount: '',
+    current_amount: '',
+    deadline: ''
+  });
+  const [editingId, setEditingId] = useState(null);
 
-const Goals = () => {
-  const [goals, setGoals] = useState(MOCK_GOALS);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  
+  const fetchGoals = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get('/goals');
+      setGoals(res.data);
+    } catch (err) {
+      console.warn('Usando dados locais temporários');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await api.get('/goals');
-        setGoals(res.data);
-      } catch (err) {
-        console.warn('Backend offline, using mock goals');
-      }
-    };
-    fetchData();
+    fetchGoals();
   }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      if (editingId) {
+        await api.put(`/goals/${editingId}`, formData);
+      } else {
+        await api.post('/goals', formData);
+      }
+      setIsModalOpen(false);
+      resetForm();
+      fetchGoals();
+    } catch (err) {
+      alert('Erro ao salvar meta');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Excluir esta meta?')) return;
+    try {
+      await api.delete(`/goals/${id}`);
+      fetchGoals();
+    } catch (err) {
+      alert('Erro ao excluir');
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({ name: '', target_amount: '', current_amount: '', deadline: '' });
+    setEditingId(null);
+  };
 
   return (
     <motion.div 
@@ -124,10 +158,25 @@ const Goals = () => {
               <div className="flex justify-between items-center pt-2">
                 <p className="text-xs font-bold text-slate-400">Objetivo: <span className="text-slate-900 dark:text-white">R$ {goal.target_amount.toLocaleString()}</span></p>
                 <div className="flex gap-2">
-                  <button className="p-2 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-400 hover:text-primary-600 transition-colors">
+                  <button 
+                    onClick={() => {
+                      setEditingId(goal.id);
+                      setFormData({
+                        name: goal.name,
+                        target_amount: goal.target_amount,
+                        current_amount: goal.current_amount,
+                        deadline: goal.deadline ? goal.deadline.split('T')[0] : ''
+                      });
+                      setIsModalOpen(true);
+                    }}
+                    className="p-2 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-400 hover:text-primary-600 transition-colors"
+                  >
                     <Edit2 className="w-4 h-4" />
                   </button>
-                  <button className="p-2 bg-red-50 dark:bg-red-900/10 rounded-xl text-red-500 hover:bg-red-100 transition-colors">
+                  <button 
+                    onClick={() => handleDelete(goal.id)}
+                    className="p-2 bg-red-50 dark:bg-red-900/10 rounded-xl text-red-500 hover:bg-red-100 transition-colors"
+                  >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -159,14 +208,42 @@ const Goals = () => {
                 <X className="w-6 h-6" />
               </button>
               <h2 className="text-3xl font-black mb-8">Planejar Novo Sonho</h2>
-              <div className="space-y-6">
-                <input type="text" placeholder="Qual o seu objetivo?" className="input-premium" />
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <input 
+                  type="text" 
+                  placeholder="Qual o seu objetivo?" 
+                  className="input-premium" 
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  required 
+                />
                 <div className="grid grid-cols-2 gap-4">
-                  <input type="number" placeholder="Valor Total R$" className="input-premium" />
-                  <input type="date" className="input-premium" />
+                  <input 
+                    type="number" 
+                    placeholder="Valor Total R$" 
+                    className="input-premium" 
+                    value={formData.target_amount}
+                    onChange={(e) => setFormData({...formData, target_amount: e.target.value})}
+                    required 
+                  />
+                  <input 
+                    type="number" 
+                    placeholder="Já Poupado R$" 
+                    className="input-premium" 
+                    value={formData.current_amount}
+                    onChange={(e) => setFormData({...formData, current_amount: e.target.value})}
+                  />
                 </div>
-                <button onClick={() => setIsModalOpen(false)} className="btn-premium w-full py-5 text-lg">Criar Meta</button>
-              </div>
+                <input 
+                  type="date" 
+                  className="input-premium" 
+                  value={formData.deadline}
+                  onChange={(e) => setFormData({...formData, deadline: e.target.value})}
+                />
+                <button type="submit" disabled={submitting} className="btn-premium w-full py-5 text-lg">
+                  {submitting ? <Loader2 className="animate-spin w-6 h-6" /> : (editingId ? 'Salvar Alterações' : 'Criar Meta')}
+                </button>
+              </form>
             </motion.div>
           </div>
         )}
