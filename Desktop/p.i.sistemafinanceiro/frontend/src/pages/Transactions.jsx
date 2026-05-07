@@ -9,23 +9,14 @@ import {
   ArrowDownCircle,
   X,
   Loader2,
-  Filter,
-  MoreVertical
+  Filter
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const MOCK_TRANSACTIONS = [
-  { id: 1, description: 'Salário Mensal', amount: 8500, type: 'income', date: new Date().toISOString(), category: { name: 'Salário', color: '#10b981' } },
-  { id: 2, description: 'Supermercado', amount: 450.20, type: 'expense', date: new Date().toISOString(), category: { name: 'Alimentação', color: '#ef4444' } },
-  { id: 3, description: 'Assinatura Netflix', amount: 55.90, type: 'expense', date: new Date().toISOString(), category: { name: 'Lazer', color: '#8b5cf6' } },
-  { id: 4, description: 'Uber Trabalho', amount: 32.50, type: 'expense', date: new Date().toISOString(), category: { name: 'Transporte', color: '#3b82f6' } },
-  { id: 5, description: 'Venda de Notebook', amount: 2500, type: 'income', date: new Date().toISOString(), category: { name: 'Outros', color: '#6b7280' } },
-];
-
 const Transactions = () => {
-  const [transactions, setTransactions] = useState(MOCK_TRANSACTIONS);
+  const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -42,19 +33,26 @@ const Transactions = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
 
+  const fetchTransactions = async () => {
+    setLoading(true);
+    try {
+      const [transRes, catRes] = await Promise.all([
+        api.get('/transactions'),
+        api.get('/transactions/categories')
+      ]);
+      setTransactions(transRes.data);
+      setCategories(catRes.data);
+    } catch (err) {
+      console.warn('Erro ao buscar dados');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [transRes, catRes] = await Promise.all([
-          api.get('/transactions'),
-          api.get('/transactions/categories')
-        ]);
-        setTransactions(transRes.data);
-        setCategories(catRes.data);
-      } catch (err) {
-        console.warn('Backend offline, using mock transactions');
-      }
-    };
+    fetchTransactions();
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -66,42 +64,21 @@ const Transactions = () => {
       }
       setIsModalOpen(false);
       resetForm();
-      fetchTransactions(); // Refresh the list
+      fetchTransactions();
     } catch (err) {
-      console.error('Erro ao salvar transação:', err);
-      alert('Não foi possível salvar a transação. Verifique os dados.');
+      alert('Erro ao salvar transação');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const fetchTransactions = async () => {
-    setLoading(true);
-    try {
-      const [transRes, catRes] = await Promise.all([
-        api.get('/transactions'),
-        api.get('/transactions/categories')
-      ]);
-      setTransactions(transRes.data);
-      setCategories(catRes.data);
-    } catch (err) {
-      console.warn('Erro ao buscar dados, usando mocks');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchTransactions();
-  }, []);
-
   const handleDelete = async (id) => {
-    if (!window.confirm('Tem certeza que deseja excluir esta transação?')) return;
+    if (!window.confirm('Tem certeza?')) return;
     try {
       await api.delete(`/transactions/${id}`);
       fetchTransactions();
     } catch (err) {
-      alert('Erro ao excluir transação');
+      alert('Erro ao excluir');
     }
   };
 
@@ -140,7 +117,6 @@ const Transactions = () => {
         </button>
       </header>
 
-      {/* Advanced Filter Bar */}
       <div className="flex flex-col md:flex-row gap-4 items-center">
         <div className="relative flex-1 w-full">
           <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -152,103 +128,104 @@ const Transactions = () => {
             className="input-premium pl-14"
           />
         </div>
-        <button className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-primary-600 transition-colors">
-          <Filter className="w-6 h-6" />
-        </button>
       </div>
 
-      {/* Transactions Table/List */}
-      <div className="glass-card !p-0 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="bg-slate-50/50 dark:bg-slate-800/30 text-slate-400 text-xs font-black uppercase tracking-widest">
-                <th className="px-8 py-5">Movimentação</th>
-                <th className="px-8 py-5">Categoria</th>
-                <th className="px-8 py-5">Data</th>
-                <th className="px-8 py-5">Valor</th>
-                <th className="px-8 py-5 text-right"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              <AnimatePresence>
-                {filteredTransactions.map((t) => (
-                  <motion.tr 
-                    key={t.id}
-                    layout
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors group"
-                  >
-                    <td className="px-8 py-6">
-                      <div className="flex items-center gap-4">
-                        <div className={cn(
-                          "w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm",
-                          t.type === 'income' ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
-                        )}>
-                          {t.type === 'income' ? <ArrowUpCircle className="w-6 h-6" /> : <ArrowDownCircle className="w-6 h-6" />}
-                        </div>
-                        <div>
-                          <p className="font-bold text-slate-800 dark:text-slate-200">{t.description}</p>
-                          <p className="text-xs font-bold text-slate-400 uppercase tracking-tighter">{t.type === 'income' ? 'Entrada' : 'Saída'}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-8 py-6">
-                      <span className="px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider" 
-                            style={{ backgroundColor: `${t.category?.color || '#6b7280'}15`, color: t.category?.color || '#6b7280' }}>
-                        {t.category?.name || 'Sem Categoria'}
-                      </span>
-                    </td>
-                    <td className="px-8 py-6">
-                      <p className="text-sm font-semibold text-slate-500">
-                        {format(new Date(t.date), "dd 'de' MMM", { locale: ptBR })}
-                      </p>
-                    </td>
-                    <td className="px-8 py-6">
-                      <p className={cn(
-                        "text-lg font-black",
-                        t.type === 'income' ? "text-green-600" : "text-slate-900 dark:text-white"
-                      )}>
-                        {t.type === 'income' ? '+' : '-'} R$ {t.amount?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || '0,00'}
-                      </p>
-                    </td>
-                    <td className="px-8 py-6 text-right">
-                      <div className="flex gap-2 justify-end">
-                        <button 
-                          onClick={() => {
-                            setEditingId(t.id);
-                            setFormData({
-                              description: t.description,
-                              amount: t.amount,
-                              type: t.type,
-                              category_id: t.category.id,
-                              date: t.date.split('T')[0]
-                            });
-                            setIsModalOpen(true);
-                          }}
-                          className="p-2 text-slate-400 hover:text-primary-600 transition-colors"
-                        >
-                          <Edit2 className="w-5 h-5" />
-                        </button>
-                        <button 
-                          onClick={() => handleDelete(t.id)}
-                          className="p-2 text-slate-400 hover:text-red-500 transition-colors"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </td>
-                  </motion.tr>
-                ))}
-              </AnimatePresence>
-            </tbody>
-          </table>
+      {loading ? (
+        <div className="flex justify-center py-20">
+          <Loader2 className="w-10 h-10 animate-spin text-primary-600" />
         </div>
-      </div>
+      ) : (
+        <div className="glass-card !p-0 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-slate-50/50 dark:bg-slate-800/30 text-slate-400 text-xs font-black uppercase tracking-widest">
+                  <th className="px-8 py-5">Movimentação</th>
+                  <th className="px-8 py-5">Categoria</th>
+                  <th className="px-8 py-5">Data</th>
+                  <th className="px-8 py-5">Valor</th>
+                  <th className="px-8 py-5 text-right"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <AnimatePresence>
+                  {filteredTransactions.map((t) => (
+                    <motion.tr 
+                      key={t.id}
+                      layout
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors group"
+                    >
+                      <td className="px-8 py-6">
+                        <div className="flex items-center gap-4">
+                          <div className={cn(
+                            "w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm",
+                            t.type === 'income' ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
+                          )}>
+                            {t.type === 'income' ? <ArrowUpCircle className="w-6 h-6" /> : <ArrowDownCircle className="w-6 h-6" />}
+                          </div>
+                          <div>
+                            <p className="font-bold text-slate-800 dark:text-slate-200">{t.description}</p>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-tighter">{t.type === 'income' ? 'Entrada' : 'Saída'}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-8 py-6">
+                        <span className="px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider" 
+                              style={{ backgroundColor: `${t.category?.color || '#6b7280'}15`, color: t.category?.color || '#6b7280' }}>
+                          {t.category?.name || 'Sem Categoria'}
+                        </span>
+                      </td>
+                      <td className="px-8 py-6">
+                        <p className="text-sm font-semibold text-slate-500">
+                          {format(new Date(t.date), "dd 'de' MMM", { locale: ptBR })}
+                        </p>
+                      </td>
+                      <td className="px-8 py-6">
+                        <p className={cn(
+                          "text-lg font-black",
+                          t.type === 'income' ? "text-green-600" : "text-slate-900 dark:text-white"
+                        )}>
+                          {t.type === 'income' ? '+' : '-'} R$ {t.amount?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || '0,00'}
+                        </p>
+                      </td>
+                      <td className="px-8 py-6 text-right">
+                        <div className="flex gap-2 justify-end">
+                          <button 
+                            onClick={() => {
+                              setEditingId(t.id);
+                              setFormData({
+                                description: t.description,
+                                amount: t.amount,
+                                type: t.type,
+                                category_id: t.category.id,
+                                date: t.date.split('T')[0]
+                              });
+                              setIsModalOpen(true);
+                            }}
+                            className="p-2 text-slate-400 hover:text-primary-600 transition-colors"
+                          >
+                            <Edit2 className="w-5 h-5" />
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(t.id)}
+                            className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </AnimatePresence>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
-      {/* Modal - Simplified for aesthetic demo */}
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-md">
@@ -262,7 +239,7 @@ const Transactions = () => {
                 <X className="w-6 h-6" />
               </button>
               
-              <h2 className="text-3xl font-black mb-8">Nova Movimentação</h2>
+              <h2 className="text-3xl font-black mb-8">{editingId ? 'Editar Movimentação' : 'Nova Movimentação'}</h2>
               
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-2 gap-4 p-1.5 bg-slate-100 dark:bg-slate-800 rounded-3xl">
