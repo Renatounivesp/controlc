@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+  --color-primary-950: #172554;
+  
+  --animate-shimmer: shimmer 2s linear infinite;
+  
+  @keyframes shimmer {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(100%); }
+  }
+}
+
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  font-family: 'Outfit', sans-serif;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  @apply bg-[#f8fafc] text-slate-900 transition-colors duration-500;
+}
+
+.dark body {
+  @apply bg-[#020617] text-slate-50;
+}
+
+@utility glass-card {
+  @apply bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl border border-white/40 dark:border-slate-800/50 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] rounded-[2rem] p-6 transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)];
+}
+
+
+@utility btn-premium {
+  @apply relative overflow-hidden px-6 py-3 rounded-2xl font-bold transition-all duration-300
+         bg-gradient-to-br from-primary-600 to-blue-700 text-white
+         hover:shadow-[0_10px_20px_-5px_rgba(37,99,235,0.4)] hover:-translate-y-0.5
+         active:scale-95 flex items-center justify-center gap-2;
+}
+
+@utility input-premium {
+  @apply w-full px-5 py-4 bg-slate-100/50 dark:bg-slate-800/50 border-2 border-transparent 
+         rounded-2xl outline-none transition-all duration-300
+         focus:border-primary-500/50 focus:bg-white dark:focus:bg-slate-800
+         placeholder:text-slate-400;
+}
+
+@utility nav-item {
+  @apply flex items-center gap-3 px-5 py-4 rounded-2xl transition-all duration-300 font-medium;
+}
+
+@utility nav-item-active {
+  @apply bg-white dark:bg-slate-800 text-primary-600 dark:text-primary-400 shadow-sm font-bold scale-105;
+}
+
+@utility gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-blue-400 font-extrabold;
+}
+
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 dark:bg-slate-800 rounded-full hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors;
+}
+
+/* Animations */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
