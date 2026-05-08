@@ -28,7 +28,6 @@ def get_stats():
     ).group_by(Category.name).all()
     
     # Monthly Comparison (Last 6 months)
-    # Handle different database engines
     engine_name = db.engine.name
     if engine_name == 'postgresql':
         monthly_stats = db.session.query(
@@ -36,8 +35,6 @@ def get_stats():
             Transaction.type,
             func.sum(Transaction.amount)
         ).filter_by(user_id=user_id).group_by('month', Transaction.type).order_by('month').all()
-        
-        monthly_data = [{"month": m.strftime('%Y-%m'), "type": t, "value": float(v)} for m, t, v in monthly_stats]
     else:
         # SQLite fallback
         monthly_stats = db.session.query(
@@ -45,14 +42,31 @@ def get_stats():
             Transaction.type,
             func.sum(Transaction.amount)
         ).filter_by(user_id=user_id).group_by('month', Transaction.type).order_by('month').all()
+
+    # Grouping logic to match frontend expectations: [{month: 'Jan', income: 100, expenses: 50}]
+    grouped_months = {}
+    for m, t, v in monthly_stats:
+        month_str = m.strftime('%Y-%m') if engine_name == 'postgresql' else m
+        if month_str not in grouped_months:
+            grouped_months[month_str] = {"month": month_str, "income": 0, "expenses": 0}
         
-        monthly_data = [{"month": m, "type": t, "value": float(v)} for m, t, v in monthly_stats]
+        if t == 'income':
+            grouped_months[month_str]["income"] = float(v)
+        else:
+            grouped_months[month_str]["expenses"] = float(v)
     
+    monthly_data = sorted(list(grouped_months.values()), key=lambda x: x['month'])
+    
+    # If no data, provide at least the current month with zero values to keep the chart visible
+    if not monthly_data:
+        current_month = datetime.now().strftime('%Y-%m')
+        monthly_data = [{"month": current_month, "income": 0, "expenses": 0}]
+
     return jsonify({
         "totals": {
-            "income": income,
-            "expenses": expenses,
-            "balance": balance
+            "income": float(income),
+            "expenses": float(expenses),
+            "balance": float(balance)
         },
         "categories": [{"name": name, "value": float(val)} for name, val in category_stats],
         "monthly": monthly_data

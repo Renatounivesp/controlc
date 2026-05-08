@@ -43,15 +43,19 @@ const MOCK_STATS = {
 
 const Dashboard = () => {
   const [stats, setStats] = useState(MOCK_STATS);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         const response = await api.get('/statistics');
         setStats(response.data);
       } catch (err) {
         console.warn('Backend offline, using mock data');
+        setStats(MOCK_STATS);
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
@@ -161,65 +165,88 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-          <div className="h-[350px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={stats.monthly}>
-                <defs>
-                  <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" strokeOpacity={0.5} />
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontWeight: 600}} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontWeight: 600}} />
-                <Tooltip 
-                  contentStyle={{borderRadius: '24px', border: 'none', boxShadow: '0 20px 40px rgba(0,0,0,0.1)', padding: '16px'}}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="income" 
-                  stroke="#3b82f6" 
-                  strokeWidth={4} 
-                  fillOpacity={1} 
-                  fill="url(#colorIncome)" 
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="expenses" 
-                  stroke="#cbd5e1" 
-                  strokeWidth={2} 
-                  fill="transparent" 
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+          <div className="h-[350px] flex items-center justify-center">
+            {loading ? (
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-10 h-10 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" />
+                <p className="text-slate-400 font-medium">Carregando dados...</p>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={stats?.monthly || []}>
+                  <defs>
+                    <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" strokeOpacity={0.5} />
+                  <XAxis 
+                    dataKey="month" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{fill: '#94a3b8', fontWeight: 600}} 
+                    dy={10} 
+                  />
+                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontWeight: 600}} />
+                  <Tooltip 
+                    contentStyle={{borderRadius: '24px', border: 'none', boxShadow: '0 20px 40px rgba(0,0,0,0.1)', padding: '16px'}}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="income" 
+                    stroke="#3b82f6" 
+                    strokeWidth={4} 
+                    fillOpacity={1} 
+                    fill="url(#colorIncome)" 
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="expenses" 
+                    stroke="#cbd5e1" 
+                    strokeWidth={2} 
+                    fill="transparent" 
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </motion.div>
 
         <motion.div variants={itemVariants} className="glass-card">
           <h3 className="text-xl font-bold mb-8">Distribuição</h3>
-          <div className="h-[300px] relative">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={stats?.categories || []}
-                  innerRadius={80}
-                  outerRadius={100}
-                  paddingAngle={8}
-                  dataKey="value"
-                  stroke="none"
-                >
-                    {stats?.categories?.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total</span>
-              <span className="text-2xl font-black">100%</span>
-            </div>
+          <div className="h-[300px] relative flex items-center justify-center">
+            {loading ? (
+              <div className="w-8 h-8 border-3 border-primary-500 border-t-transparent rounded-full animate-spin" />
+            ) : stats?.categories?.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={stats?.categories || []}
+                    innerRadius={80}
+                    outerRadius={100}
+                    paddingAngle={8}
+                    dataKey="value"
+                    stroke="none"
+                  >
+                      {stats?.categories?.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="text-center p-6">
+                <p className="text-slate-400 text-sm">Sem dados de categorias</p>
+              </div>
+            )}
+            {!loading && stats?.categories?.length > 0 && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total</span>
+                <span className="text-2xl font-black">100%</span>
+              </div>
+            )}
           </div>
           <div className="space-y-3 mt-6">
             {stats?.categories?.map((cat, i) => (
