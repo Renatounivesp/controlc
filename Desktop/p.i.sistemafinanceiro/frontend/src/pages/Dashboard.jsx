@@ -74,7 +74,7 @@ const Dashboard = () => {
     visible: { y: 0, opacity: 1 }
   };
 
-  const COLORS = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6'];
+  const COLORS = ['#6366f1', '#f43f5e', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4'];
 
   const handleExport = async (type) => {
     try {
@@ -156,11 +156,11 @@ const Dashboard = () => {
             <h3 className="text-xl font-bold">Atividade Mensal</h3>
             <div className="flex gap-4">
               <div className="flex items-center gap-2 text-sm">
-                <div className="w-3 h-3 rounded-full bg-primary-500" />
+                <div className="w-3 h-3 rounded-full" style={{background: 'linear-gradient(135deg, #6366f1, #818cf8)'}} />
                 <span className="font-medium text-slate-500">Receitas</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
-                <div className="w-3 h-3 rounded-full bg-blue-300" />
+                <div className="w-3 h-3 rounded-full" style={{background: 'linear-gradient(135deg, #f43f5e, #fb7185)'}} />
                 <span className="font-medium text-slate-500">Despesas</span>
               </div>
             </div>
@@ -173,11 +173,15 @@ const Dashboard = () => {
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={stats?.monthly || []}>
+                <AreaChart data={stats?.monthly || []} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                      <stop offset="0%" stopColor="#6366f1" stopOpacity={0.5}/>
+                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0.02}/>
+                    </linearGradient>
+                    <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#f43f5e" stopOpacity={0.45}/>
+                      <stop offset="95%" stopColor="#f43f5e" stopOpacity={0.02}/>
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" strokeOpacity={0.5} />
@@ -190,22 +194,26 @@ const Dashboard = () => {
                   />
                   <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontWeight: 600}} />
                   <Tooltip 
-                    contentStyle={{borderRadius: '24px', border: 'none', boxShadow: '0 20px 40px rgba(0,0,0,0.1)', padding: '16px'}}
+                    contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 20px 40px rgba(0,0,0,0.12)', padding: '14px 18px'}}
+                    labelStyle={{fontWeight: 700, color: '#1e293b'}}
                   />
                   <Area 
                     type="monotone" 
-                    dataKey="income" 
-                    stroke="#3b82f6" 
-                    strokeWidth={4} 
+                    dataKey="income"
+                    name="Receitas"
+                    stroke="#6366f1"
+                    strokeWidth={3}
                     fillOpacity={1} 
                     fill="url(#colorIncome)" 
                   />
                   <Area 
                     type="monotone" 
-                    dataKey="expenses" 
-                    stroke="#cbd5e1" 
-                    strokeWidth={2} 
-                    fill="transparent" 
+                    dataKey="expenses"
+                    name="Despesas"
+                    stroke="#f43f5e"
+                    strokeWidth={3}
+                    fillOpacity={1}
+                    fill="url(#colorExpenses)"
                   />
                 </AreaChart>
               </ResponsiveContainer>
