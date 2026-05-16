@@ -33,6 +33,7 @@ export const useMediaStore = create<MediaState>()(
     (set) => ({
       categories: defaultCategories,
       mediaList: [],
+      isLoading: false,
 
       addCategory: (category) => set((state) => ({ 
         categories: [...state.categories, category] 
