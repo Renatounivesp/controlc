@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings2, Plus, Trash2, X, Check, Pencil, Image as ImageIcon } from 'lucide-react';
+import { Plus, Trash2, X, Pencil, Image as ImageIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import GlassCard from '../components/GlassCard';
 import { useDashboardStore, getIconByName, type DashboardItem } from '../store/useDashboardStore';
@@ -166,8 +166,7 @@ function DashboardItemCard({ item, isEditMode, removeItem, onEdit, index, moveIt
 }
 
 export default function Dashboard() {
-  const { items, addItem, removeItem, updateItems, updateItem, fetchItems } = useDashboardStore();
-  const [isEditMode, setIsEditMode] = useState(false);
+  const { items, addItem, removeItem, updateItems, updateItem, fetchItems, isEditMode, setIsEditMode } = useDashboardStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<DashboardItem | null>(null);
   const [formData, setFormData] = useState<Partial<DashboardItem>>({
@@ -267,33 +266,12 @@ export default function Dashboard() {
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
 
-      {/* Top bar: title + edit button */}
+      {/* Top bar: title */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', padding: '0 4px' }}>
         <div>
           <h1 style={{ fontSize: '1.4rem', fontWeight: 700 }}>Central Realce Film</h1>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>Bem-vindo ao painel de controle</p>
         </div>
-        <button
-          onClick={() => setIsEditMode(!isEditMode)}
-          style={{
-            padding: '10px 20px',
-            borderRadius: '20px',
-            background: isEditMode ? 'var(--primary)' : 'rgba(255,255,255,0.06)',
-            color: 'white',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            fontSize: '0.85rem',
-            fontWeight: 600,
-            border: isEditMode ? 'none' : '1px solid rgba(255,255,255,0.1)',
-            cursor: 'pointer',
-            transition: 'all 0.3s',
-            boxShadow: isEditMode ? '0 4px 15px rgba(0,102,255,0.3)' : 'none',
-          }}
-        >
-          {isEditMode ? <Check size={16} /> : <Settings2 size={16} />}
-          {isEditMode ? 'Salvar' : 'Editar Atalhos'}
-        </button>
       </div>
 
       {/* Quick Access Section */}

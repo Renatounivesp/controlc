@@ -21,6 +21,8 @@ export interface DashboardItem {
 interface DashboardState {
   items: DashboardItem[];
   isLoading: boolean;
+  isEditMode: boolean;
+  setIsEditMode: (value: boolean) => void;
   fetchItems: () => Promise<void>;
   addItem: (item: DashboardItem) => Promise<void>;
   removeItem: (id: string) => Promise<void>;
@@ -35,6 +37,10 @@ export const useDashboardStore = create<DashboardState>()(
     (set, get) => ({
       items: [],
       isLoading: false,
+      isEditMode: false,
+      theme: 'dark',
+      
+      setIsEditMode: (isEditMode) => set({ isEditMode }),
 
       fetchItems: async () => {
         // If Supabase is not configured, don't try to fetch and overwrite local state
@@ -116,7 +122,6 @@ export const useDashboardStore = create<DashboardState>()(
         await supabase.from('shortcuts').update(updates).eq('id', id);
       },
       
-      theme: 'dark',
       toggleTheme: () => set((state) => ({ theme: state.theme === 'dark' ? 'light' : 'dark' })),
     }),
     {
