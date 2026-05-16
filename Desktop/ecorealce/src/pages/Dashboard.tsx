@@ -201,7 +201,7 @@ export default function Dashboard() {
   const handleOpenEdit = (item: DashboardItem) => {
     setEditingItem(item);
     setFormData(item);
-    setIsModalOpen(true);
+    setIsAddModalOpen(true);
   };
 
   const moveItem = (from: number, to: number) => {
