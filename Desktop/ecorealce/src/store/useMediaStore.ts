@@ -17,6 +17,7 @@ interface MediaState {
   removeCategory: (category: string) => void;
   addMedia: (item: MediaItem) => void;
   removeMedia: (id: number) => void;
+  updateMedia: (id: number, updates: Partial<MediaItem>) => void;
   fetchMedia: () => Promise<void>;
 }
 
@@ -48,6 +49,13 @@ export const useMediaStore = create<MediaState>()(
       removeMedia: async (id) => {
         set((state) => ({ mediaList: state.mediaList.filter((m) => m.id !== id) }));
         await supabase.from('media').delete().eq('id', id);
+      },
+
+      updateMedia: async (id, updates) => {
+        set((state) => ({
+          mediaList: state.mediaList.map((m) => m.id === id ? { ...m, ...updates } : m)
+        }));
+        await supabase.from('media').update(updates).eq('id', id);
       },
 
       fetchMedia: async () => {

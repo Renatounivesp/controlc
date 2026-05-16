@@ -2,17 +2,20 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'react-router-dom';
 import { useMediaStore, type MediaItem } from '../store/useMediaStore';
-import { Image as ImageIcon, Video, CheckCircle2, MessageCircle, X, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Image as ImageIcon, Video, CheckCircle2, MessageCircle, X, Plus, Trash2, ChevronDown, ChevronUp, Pencil, Save } from 'lucide-react';
 
 export default function MediaArea() {
   const [searchParams] = useSearchParams();
-  const { categories, mediaList, addCategory, removeCategory, addMedia, removeMedia, fetchMedia } = useMediaStore();
+  const { categories, mediaList, addCategory, removeCategory, addMedia, removeMedia, updateMedia, fetchMedia } = useMediaStore();
   const initialTab = searchParams.get('tab') === 'videos' ? 'videos' : 'photos';
   const [activeTab, setActiveTab] = useState<'photos' | 'videos'>(initialTab);
   const [activeCategory, setActiveCategory] = useState('Todos');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
+  
+  const [editingMedia, setEditingMedia] = useState<MediaItem | null>(null);
+  const [editFormData, setEditFormData] = useState<Partial<MediaItem>>({});
   
   const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -142,6 +145,29 @@ export default function MediaArea() {
     const message = `Olá! Veja estas opções da Realce Film:\n\n${selectedMedia.map(m => `*${m.title}*\n${m.url}`).join('\n\n')}`;
     const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
+  };
+
+  const handleOpenEdit = (media: MediaItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingMedia(media);
+    setEditFormData({ title: media.title, category: media.category });
+  };
+
+  const handleUpdateMedia = () => {
+    if (editingMedia && editFormData.title) {
+      updateMedia(editingMedia.id, { 
+        title: editFormData.title, 
+        category: editFormData.category 
+      });
+      setEditingMedia(null);
+    }
+  };
+
+  const handleDeleteMedia = () => {
+    if (editingMedia && window.confirm('Deseja realmente excluir esta mídia?')) {
+      removeMedia(editingMedia.id);
+      setEditingMedia(null);
+    }
   };
 
   const filteredMedia = mediaList.filter(item => {
@@ -287,13 +313,13 @@ export default function MediaArea() {
                   </div>
                 )}
                 <button 
-                  onClick={(e) => { e.stopPropagation(); removeMedia(media.id); }}
+                  onClick={(e) => handleOpenEdit(media, e)}
                   style={{ 
                     position: 'absolute', 
                     top: '12px', 
                     left: '12px', 
                     color: 'white', 
-                    background: 'rgba(239, 68, 68, 0.8)', 
+                    background: 'rgba(0, 102, 255, 0.8)', 
                     borderRadius: '50%',
                     width: '32px',
                     height: '32px',
@@ -301,10 +327,11 @@ export default function MediaArea() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     opacity: isSelected ? 0 : 1,
-                    transition: 'opacity 0.2s'
+                    transition: 'opacity 0.2s',
+                    zIndex: 10
                   }}
                 >
-                  <Trash2 size={16} />
+                  <Pencil size={16} />
                 </button>
                 {media.type === 'video' && !isSelected && (
                   <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(0,0,0,0.5)', borderRadius: '50%', padding: '12px' }}>
@@ -366,6 +393,75 @@ export default function MediaArea() {
               </button>
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Modal */}
+      <AnimatePresence>
+        {editingMedia && (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
+              onClick={() => setEditingMedia(null)}
+              style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)' }} 
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              className="glass"
+              style={{ width: '100%', maxWidth: '400px', padding: '28px', zIndex: 1001, backgroundColor: 'rgba(15,15,20,0.95)', borderRadius: '24px' }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Editar Mídia</h2>
+                <button onClick={() => setEditingMedia(null)} style={{ color: 'var(--text-muted)' }}><X /></button>
+              </div>
+
+              <div style={{ marginBottom: '20px', borderRadius: '12px', overflow: 'hidden', height: '150px' }}>
+                <img src={editingMedia.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Título</label>
+                  <input 
+                    type="text" 
+                    value={editFormData.title}
+                    onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
+                    className="glass-panel"
+                    style={{ width: '100%', padding: '12px', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+                  />
+                </div>
+                
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Categoria</label>
+                  <select 
+                    value={editFormData.category}
+                    onChange={(e) => setEditFormData({ ...editFormData, category: e.target.value })}
+                    className="glass-panel"
+                    style={{ width: '100%', padding: '12px', color: 'white', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)' }}
+                  >
+                    {categories.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+                  <button 
+                    onClick={handleUpdateMedia}
+                    style={{ flex: 1, padding: '14px', background: 'var(--primary)', color: 'white', borderRadius: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                  >
+                    <Save size={18} /> Salvar
+                  </button>
+                  <button 
+                    onClick={handleDeleteMedia}
+                    style={{ padding: '14px', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', borderRadius: '12px', fontWeight: 600, border: '1px solid rgba(239, 68, 68, 0.2)' }}
+                  >
+                    <Trash2 size={20} />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>
