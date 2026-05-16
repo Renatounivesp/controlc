@@ -166,25 +166,57 @@ export default function MediaArea() {
     const selectedMedia = (mediaList || []).filter(m => m && selectedIds.includes(m.id));
     if (selectedMedia.length === 0) return;
 
-    const firstUrl = selectedMedia[0]?.url || '';
-    const shareData = {
-      title: 'Realce Film - Mídias',
-      text: `Olá! Veja estas mídias da Realce Film:\n\n${selectedMedia.map(m => m.title || 'Mídia').join(', ')}`,
-      url: firstUrl
-    };
-
     try {
+      // Check if file sharing is supported
+      if (navigator.share && navigator.canShare) {
+        const files: File[] = [];
+        
+        // We only allow sharing up to 5 files to avoid browser limits/performance issues
+        const mediaToShare = selectedMedia.slice(0, 5);
+        
+        for (const item of mediaToShare) {
+          try {
+            const response = await fetch(item.url);
+            const blob = await response.blob();
+            const fileName = (item.title || 'midia').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            const extension = item.type === 'video' ? 'mp4' : 'jpg';
+            const file = new File([blob], `${fileName}.${extension}`, { type: blob.type });
+            files.push(file);
+          } catch (e) {
+            console.error('Error fetching file for share:', e);
+          }
+        }
+
+        if (files.length > 0 && navigator.canShare({ files })) {
+          await navigator.share({
+            files,
+            title: 'Realce Film - Mídias',
+            text: 'Veja as mídias em anexo.'
+          });
+          return; // Success
+        }
+      }
+
+      // Fallback: Share as links
+      const firstUrl = selectedMedia[0]?.url || '';
+      const shareText = `Olá! Veja estas opções da Realce Film:\n\n${selectedMedia.map(m => `*${m.title || 'Mídia'}*\n${m.url}`).join('\n\n')}`;
+      
       if (navigator.share) {
         await navigator.share({
-          ...shareData,
-          text: `Olá! Veja estas opções da Realce Film:\n\n${selectedMedia.map(m => `*${m.title}*\n${m.url}`).join('\n\n')}`
+          title: 'Realce Film - Mídias',
+          text: shareText,
+          url: firstUrl
         });
       } else {
-        await navigator.clipboard.writeText(shareData.text);
+        await navigator.clipboard.writeText(shareText);
         alert('Links copiados para a área de transferência!');
       }
     } catch (err) {
       console.error('Error sharing:', err);
+      // Last fallback: Copy to clipboard
+      const shareText = `Olá! Veja estas opções da Realce Film:\n\n${selectedMedia.map(m => `*${m.title || 'Mídia'}*\n${m.url}`).join('\n\n')}`;
+      await navigator.clipboard.writeText(shareText);
+      alert('Houve um erro ao compartilhar os arquivos, mas os links foram copiados para sua área de transferência.');
     }
   };
 
