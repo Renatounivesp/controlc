@@ -106,7 +106,7 @@ export const useMediaStore = create<MediaState>()(
           if (error) throw error;
           
           const media = data || [];
-          const dbCategories = [...new Set(media.map((m: any) => m.category))].filter(Boolean);
+          const dbCategories = [...new Set(media.map((m: any) => m.category))].filter(Boolean) as string[];
           
           set((state) => ({ 
             mediaList: media, 
