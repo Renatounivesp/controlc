@@ -76,15 +76,11 @@ export const useDashboardStore = create<DashboardState>()(
           if (data && data.length > 0) {
             set({ items: data, isLoading: false });
           } else {
-            // DB está vazio
-            const localItems = get().items;
-            if (localItems && localItems.length > 0) {
-              // Temos dados locais, vamos salvar na nuvem
-              console.log('Uploading local items to cloud...');
-              await supabase.from('shortcuts').insert(localItems);
-            } else {
-              // Nada em lugar nenhum, carregar padrões
-              const defaults = [
+            // DB está vazio ou inacessível, mantemos os locais
+            set({ isLoading: false });
+            // Se realmente não houver nada nem local, carregamos os padrões
+            if (get().items.length === 0) {
+               const defaults = [
                 { id: 'photos', title: 'Fotos', iconName: 'Image', link: '/media?tab=photos', color: '#667eea', is_quick_access: true, order_index: 0 },
                 { id: 'videos', title: 'Vídeos', iconName: 'Video', link: '/media?tab=videos', color: '#f5576c', is_quick_access: true, order_index: 1 },
                 { id: 'orcamentos', title: 'Orçamentos', iconName: 'FileText', link: '/documents', color: '#4facfe', is_quick_access: true, order_index: 2 },
@@ -94,9 +90,7 @@ export const useDashboardStore = create<DashboardState>()(
                 { id: 'textos', title: 'Textos', iconName: 'Type', link: '/notepad', color: '#a855f7', is_quick_access: true, order_index: 6 },
               ];
               set({ items: defaults });
-              await supabase.from('shortcuts').insert(defaults);
             }
-            set({ isLoading: false });
           }
         } catch (err) {
           console.error('Fetch error:', err);
@@ -108,40 +102,22 @@ export const useDashboardStore = create<DashboardState>()(
         const newItem = { ...item, order_index: get().items.length };
         set((state) => ({ items: [...state.items, newItem] }));
         
-        const { error } = await supabase.from('shortcuts').insert([newItem]);
+        const { error } = await supabase.from('shortcuts').upsert([newItem]);
         if (error) {
-          console.error('Error adding item to Supabase:', error);
-        } else {
-          console.log('Item added successfully to Supabase');
+          console.error('Sync Error:', error);
+          alert('Erro ao sincronizar com a nuvem. O atalho ficará apenas neste aparelho. Verifique se o banco de dados permite gravações.');
         }
       },
 
       removeItem: async (id) => {
-        // Update local state immediately for better UX
         set((state) => ({ items: state.items.filter((i) => i.id !== id) }));
-        
-        try {
-          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-          if (supabaseUrl) {
-            const { error } = await supabase.from('shortcuts').delete().eq('id', id);
-            if (error) throw error;
-          }
-        } catch (error) {
-          console.error('Error removing item from database:', error);
-          // Optional: Re-fetch items if you want to be sure UI matches DB after error
-          // get().fetchItems(); 
-        }
+        await supabase.from('shortcuts').delete().eq('id', id);
       },
 
       updateItems: async (items) => {
         const itemsWithOrder = items.map((item, index) => ({ ...item, order_index: index }));
         set({ items: itemsWithOrder });
-        
-        // Sync order to DB using upsert for efficiency
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        if (supabaseUrl) {
-          await supabase.from('shortcuts').upsert(itemsWithOrder);
-        }
+        await supabase.from('shortcuts').upsert(itemsWithOrder);
       },
 
       updateItem: async (id, updates) => {
@@ -152,27 +128,22 @@ export const useDashboardStore = create<DashboardState>()(
       },
 
       syncData: async () => {
-        set({ isLoading: true });
-        try {
-          const { data, error } = await supabase
-            .from('shortcuts')
-            .select('*')
-            .order('order_index', { ascending: true });
-          
-          if (error) throw error;
-          
-          if (data && data.length > 0) {
-            set({ items: data, isLoading: false });
-            return true;
-          } else {
-            set({ isLoading: false });
-            return false; // Indicamos que a nuvem está vazia
-          }
-        } catch (err) {
-          console.error('Sync error:', err);
-          set({ isLoading: false });
-          throw err;
+        const { data } = await supabase.from('shortcuts').select('*').order('order_index', { ascending: true });
+        if (data && data.length > 0) {
+          set({ items: data });
+          return true;
         }
+        return false;
+      },
+      
+      resetToDefaults: async () => {
+        // ... (mantém lógica de reset se necessário em Settings)
+      },
+
+      pushToCloud: async () => {
+        const items = get().items;
+        await supabase.from('shortcuts').delete().not('id', 'is', null);
+        await supabase.from('shortcuts').insert(items);
       },
       
       resetToDefaults: async () => {

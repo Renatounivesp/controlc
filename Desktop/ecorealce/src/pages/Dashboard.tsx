@@ -169,7 +169,6 @@ function DashboardItemCard({ item, isEditMode, removeItem, onEdit, index, moveIt
 export default function Dashboard() {
   const { items, addItem, removeItem, updateItems, updateItem, fetchItems, syncData, pushToCloud, isEditMode, setIsEditMode } = useDashboardStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isCloudModalOpen, setIsCloudModalOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   useEffect(() => {
@@ -187,29 +186,11 @@ export default function Dashboard() {
   });
 
   useEffect(() => {
-    let isMounted = true;
-    fetchItems().then(() => {
-      if (!isMounted) return;
-      // Check if we have any items at all
-      const currentItems = useDashboardStore.getState().items;
-      
-      // Auto-add "Textos" if it doesn't exist yet (user request)
-      const hasTextos = currentItems.some(i => i && (i.id === 'textos' || i.title === 'Textos'));
-      if (!hasTextos && currentItems.length > 0) {
-        addItem({
-          id: 'textos',
-          title: 'Textos',
-          iconName: 'Type',
-          link: '/notepad',
-          color: '#a855f7',
-          is_quick_access: true
-        });
-      }
-    }).catch(err => {
-      console.error('Error fetching dashboard items:', err);
-    });
-    return () => { isMounted = false; };
-  }, [fetchItems]); // Removed addItem to prevent potential loop if addItem changes state
+    fetchItems();
+    // Auto-sync every 30 seconds for background updates
+    const interval = setInterval(fetchItems, 30000);
+    return () => clearInterval(interval);
+  }, [fetchItems]);
 
   const handleOpenAdd = () => {
     setEditingItem(null);
@@ -295,151 +276,10 @@ export default function Dashboard() {
             {(supabase as any).isMock ? '⚠️ Erro de Conexão: Contate o Suporte' : 'Bem-vindo ao painel de controle'}
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button 
-            onClick={() => setIsCloudModalOpen(true)}
-            className="glass"
-            style={{ 
-              padding: '10px 14px', 
-              borderRadius: '12px', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '8px', 
-              color: 'var(--success)', 
-              border: '1px solid rgba(16, 185, 129, 0.2)',
-              fontSize: '0.85rem',
-              fontWeight: 600
-            }}
-          >
-            <Cloud size={18} />
-            {isMobile ? 'Nuvem' : 'Gerenciar Nuvem'}
-          </button>
         </div>
       </div>
 
-      <AnimatePresence>
-        {isCloudModalOpen && (
-          <div style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 1000,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '20px',
-            background: 'rgba(0,0,0,0.8)',
-            backdropFilter: 'blur(8px)'
-          }}>
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              style={{
-                width: '100%',
-                maxWidth: '400px',
-                background: '#121212',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '32px',
-                padding: '32px',
-                textAlign: 'center',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
-              }}
-            >
-              <div style={{ 
-                width: '64px', 
-                height: '64px', 
-                borderRadius: '20px', 
-                background: 'rgba(16, 185, 129, 0.1)', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                margin: '0 auto 24px',
-                color: '#10b981'
-              }}>
-                <Cloud size={32} />
-              </div>
 
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '8px', color: 'white' }}>Gerenciar Nuvem</h2>
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '32px' }}>
-                Escolha como deseja sincronizar seus atalhos entre seus dispositivos.
-              </p>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <button
-                  onClick={async () => {
-                    const hasData = await syncData();
-                    if (!hasData) {
-                      alert('A nuvem está vazia! Seus atalhos atuais NÃO foram apagados. Para salvar seus atalhos na nuvem, use a opção "SALVAR NA NUVEM".');
-                    } else {
-                      alert('Sincronização concluída com sucesso!');
-                      setIsCloudModalOpen(false);
-                    }
-                  }}
-                  className="glass"
-                  style={{
-                    padding: '16px',
-                    borderRadius: '16px',
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    color: 'white',
-                    fontWeight: 600,
-                    textAlign: 'left'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ color: 'var(--primary)' }}><Cloud size={20} /></div>
-                    <div>
-                      <div style={{ fontSize: '0.95rem' }}>Baixar da Nuvem</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 400 }}>Traz os atalhos salvos para este aparelho</div>
-                    </div>
-                  </div>
-                </button>
-
-                <button
-                  onClick={async () => {
-                    if (window.confirm('Isso salvará seus atalhos atuais na nuvem. Continuar?')) {
-                      await pushToCloud();
-                      alert('Atalhos salvos na nuvem com sucesso!');
-                      setIsCloudModalOpen(false);
-                    }
-                  }}
-                  className="glass"
-                  style={{
-                    padding: '16px',
-                    borderRadius: '16px',
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    color: 'white',
-                    fontWeight: 600,
-                    textAlign: 'left'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ color: 'var(--success)' }}><Cloud size={20} /></div>
-                    <div>
-                      <div style={{ fontSize: '0.95rem' }}>Salvar na Nuvem</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 400 }}>Sobe seus atalhos para usar em outros aparelhos</div>
-                    </div>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => setIsCloudModalOpen(false)}
-                  style={{
-                    marginTop: '12px',
-                    padding: '12px',
-                    color: 'var(--text-muted)',
-                    fontSize: '0.9rem',
-                    fontWeight: 500
-                  }}
-                >
-                  Fechar
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
 
 
 
