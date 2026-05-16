@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings2, Plus, Trash2, X, Check, Pencil, Image as ImageIcon, Video, FileText, Calculator, NotebookPen, Calendar } from 'lucide-react';
+import { Settings2, Plus, Trash2, X, Check, Pencil, Image as ImageIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import GlassCard from '../components/GlassCard';
 import { useDashboardStore, getIconByName, type DashboardItem } from '../store/useDashboardStore';
