@@ -2,13 +2,10 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Delete } from 'lucide-react';
 
-type CalcEntry = { expression: string; result: string };
-
 export default function Calculator() {
   const [display, setDisplay] = useState('0');
   const [expression, setExpression] = useState('');
   const [justEvaluated, setJustEvaluated] = useState(false);
-  const [history, setHistory] = useState<CalcEntry[]>([]);
 
   const handleButton = (value: string) => {
     if (value === 'C') {
@@ -29,7 +26,6 @@ export default function Calculator() {
         const expr = expression + display;
         // eslint-disable-next-line no-eval
         const result = String(eval(expr.replace(/×/g, '*').replace(/÷/g, '/')));
-        setHistory(h => [{ expression: expr + ' =', result }, ...h].slice(0, 10));
         setDisplay(result);
         setExpression('');
         setJustEvaluated(true);
