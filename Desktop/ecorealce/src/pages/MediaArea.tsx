@@ -29,7 +29,10 @@ export default function MediaArea() {
   const categoryColors = [
     '#4facfe', '#f5576c', '#38ef7d', '#ffd200', '#a5b4fc', '#f093fb', '#00f2fe'
   ];
-  const getColor = (index: number) => categoryColors[index % categoryColors.length];
+  const getColor = (index: number) => {
+    if (index < 0) return '#4facfe';
+    return categoryColors[index % categoryColors.length];
+  };
 
   const renderCategoryItem = (category: string, idx: number, isMobileItem: boolean = false) => {
     const color = getColor(idx);
@@ -177,7 +180,8 @@ export default function MediaArea() {
     }
   };
 
-  const filteredMedia = mediaList.filter(item => {
+  const filteredMedia = (mediaList || []).filter(item => {
+    if (!item) return false;
     const isTypeMatch = activeTab === 'photos' ? item.type === 'photo' : item.type === 'video';
     const isCategoryMatch = activeCategory === 'Todos' || item.category === activeCategory;
     return isTypeMatch && isCategoryMatch;
@@ -317,6 +321,7 @@ export default function MediaArea() {
         gap: '20px',
       }}>
         {filteredMedia.map((media, index) => {
+          if (!media || !media.url) return null;
           const isSelected = selectedIds.includes(media.id);
           return (
             <motion.div

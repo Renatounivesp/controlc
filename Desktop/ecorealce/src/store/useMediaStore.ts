@@ -104,9 +104,14 @@ export const useMediaStore = create<MediaState>()(
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
         if (!supabaseUrl) return;
 
-        const { data, error } = await supabase.from('media').select('*').order('id', { ascending: false });
-        if (!error && data && data.length > 0) {
-          set({ mediaList: data });
+        set({ isLoading: true });
+        try {
+          const { data, error } = await supabase.from('media').select('*').order('id', { ascending: false });
+          if (error) throw error;
+          set({ mediaList: data || [], isLoading: false });
+        } catch (err) {
+          console.error('Error fetching media:', err);
+          set({ isLoading: false });
         }
       }
     }),
