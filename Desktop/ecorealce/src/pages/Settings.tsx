@@ -1,12 +1,13 @@
-import { Smartphone, Moon, Sun, Settings2 } from 'lucide-react';
+import { Smartphone, Moon, Sun, Settings2, RefreshCw, Check } from 'lucide-react';
 import GlassCard from '../components/GlassCard';
 import { useDashboardStore } from '../store/useDashboardStore';
 import { useState, useEffect } from 'react';
 
 export default function Settings() {
-  const { theme, toggleTheme, isEditMode, setIsEditMode } = useDashboardStore();
+  const { theme, toggleTheme, isEditMode, setIsEditMode, syncData, isLoading } = useDashboardStore();
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -122,8 +123,8 @@ export default function Settings() {
               </div>
             </GlassCard>
 
-            {/* Manager Mode */}
-            <GlassCard style={{ padding: '16px 24px', border: useDashboardStore.getState().isEditMode ? '1px solid var(--primary)' : '1px solid rgba(255,255,255,0.05)' }}>
+            {/* Sync Data */}
+            <GlassCard style={{ padding: '16px 24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                   <div style={{ 
@@ -134,39 +135,36 @@ export default function Settings() {
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center',
-                    color: useDashboardStore.getState().isEditMode ? 'var(--primary)' : 'var(--text-muted)'
+                    color: 'var(--success)'
                   }}>
-                    <Settings2 size={20} />
+                    <RefreshCw size={20} className={isLoading ? 'animate-spin' : ''} />
                   </div>
                   <div>
-                    <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'white' }}>Modo Gestor</h3>
-                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Ativar edição de atalhos no dashboard</p>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'white' }}>Sincronizar Dados</h3>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Forçar atualização com o servidor</p>
                   </div>
                 </div>
-                <div 
-                  onClick={() => setIsEditMode(!isEditMode)}
+                <button 
+                  onClick={async () => {
+                    setIsSyncing(true);
+                    await syncData();
+                    setTimeout(() => setIsSyncing(false), 2000);
+                  }}
+                  disabled={isSyncing}
                   style={{ 
-                    width: '50px',
-                    height: '26px',
-                    background: isEditMode ? 'var(--primary)' : 'rgba(255,255,255,0.1)',
-                    borderRadius: '20px',
-                    position: 'relative',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s'
+                    padding: '8px 20px', 
+                    borderRadius: '20px', 
+                    background: isSyncing ? 'var(--success)' : 'rgba(255,255,255,0.05)', 
+                    color: 'white',
+                    fontSize: '0.8rem', 
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
                   }}
                 >
-                  <div style={{ 
-                    width: '18px',
-                    height: '18px',
-                    background: 'white',
-                    borderRadius: '50%',
-                    position: 'absolute',
-                    top: '4px',
-                    left: isEditMode ? '28px' : '4px',
-                    transition: 'all 0.3s',
-                    boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
-                  }} />
-                </div>
+                  {isSyncing ? <><Check size={14} /> Sincronizado</> : 'Sincronizar'}
+                </button>
               </div>
             </GlassCard>
 

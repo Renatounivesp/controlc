@@ -28,6 +28,7 @@ interface DashboardState {
   removeItem: (id: string) => Promise<void>;
   updateItems: (items: DashboardItem[]) => Promise<void>;
   updateItem: (id: string, updates: Partial<DashboardItem>) => Promise<void>;
+  syncData: () => Promise<void>;
   theme: 'dark' | 'light';
   toggleTheme: () => void;
 }
@@ -128,6 +129,22 @@ export const useDashboardStore = create<DashboardState>()(
           items: state.items.map((i) => i.id === id ? { ...i, ...updates } : i)
         }));
         await supabase.from('shortcuts').update(updates).eq('id', id);
+      },
+
+      syncData: async () => {
+        set({ isLoading: true });
+        // Clear local storage and fetch fresh
+        localStorage.removeItem('realce-dashboard-storage');
+        const { data, error } = await supabase
+          .from('shortcuts')
+          .select('*')
+          .order('order_index', { ascending: true });
+        
+        if (!error && data) {
+          set({ items: data, isLoading: false });
+        } else {
+          set({ isLoading: false });
+        }
       },
       
       toggleTheme: () => set((state) => ({ theme: state.theme === 'dark' ? 'light' : 'dark' })),
