@@ -441,9 +441,7 @@ export default function Dashboard() {
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {isModalOpen && (
-// ... rest of the file ...
+
 
       {/* Quick Access Section */}
       <section style={{ marginBottom: '40px' }}>
