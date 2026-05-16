@@ -599,51 +599,40 @@ export default function MediaArea() {
               <div>
                 <span style={{ fontWeight: 600, fontSize: isMobile ? '0.9rem' : '1rem' }}>{selectedIds.length} selecionados</span>
               </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: '8px', flex: 1, justifyContent: 'flex-end' }}>
                 <button 
-                  onClick={shareOnWhatsApp}
-                  style={{
-                    background: '#25D366',
-                    color: 'white',
-                    padding: isMobile ? '8px' : '10px 16px',
-                    borderRadius: '12px',
-                    fontWeight: 700,
-                    fontSize: isMobile ? '0.85rem' : '1rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    opacity: isSharing ? 0.5 : 1,
-                    cursor: isSharing ? 'not-allowed' : 'pointer'
-                  }}
-                  title="Enviar apenas os links via WhatsApp"
-                  disabled={isSharing}
-                >
-                  <MessageCircle size={isMobile ? 18 : 20} />
-                  {!isMobile && 'Zap (Links)'}
-                </button>
-                <button 
-                  onClick={handleFileShare}
-                  style={{
-                    background: 'var(--primary)',
-                    color: 'white',
-                    padding: isMobile ? '8px' : '10px 16px',
-                    borderRadius: '12px',
-                    fontWeight: 700,
-                    fontSize: isMobile ? '0.85rem' : '1rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    boxShadow: '0 4px 12px rgba(0, 102, 255, 0.3)',
-                    opacity: isSharing ? 0.7 : 1,
-                    cursor: isSharing ? 'wait' : 'pointer'
-                  }}
-                  title="Enviar FOTO REAL (como anexo)"
-                  disabled={isSharing}
-                >
-                  <Share2 size={isMobile ? 18 : 20} />
-                  {isSharing ? 'Processando...' : isMobile ? 'FOTO' : 'Enviar Foto Real'}
-                </button>
-              </div>
+                   onClick={handleFileShare}
+                   style={{
+                     background: '#25D366',
+                     color: 'white',
+                     padding: isMobile ? '12px 20px' : '12px 32px',
+                     borderRadius: '14px',
+                     fontWeight: 700,
+                     fontSize: isMobile ? '0.9rem' : '1rem',
+                     display: 'flex',
+                     alignItems: 'center',
+                     justifyContent: 'center',
+                     gap: '10px',
+                     boxShadow: '0 6px 20px rgba(37, 211, 102, 0.3)',
+                     opacity: isSharing ? 0.7 : 1,
+                     cursor: isSharing ? 'wait' : 'pointer',
+                     width: isMobile ? '100%' : 'auto',
+                     border: 'none',
+                     transition: 'all 0.3s'
+                   }}
+                   title="Enviar Mídias Selecionadas"
+                   disabled={isSharing}
+                 >
+                   {isSharing ? (
+                     <>Processando...</>
+                   ) : (
+                     <>
+                       <MessageCircle size={22} />
+                       {selectedIds.length === 1 ? 'Enviar no WhatsApp' : `Enviar ${selectedIds.length} no WhatsApp`}
+                     </>
+                   )}
+                 </button>
+               </div>
             </div>
           </motion.div>
         )}
