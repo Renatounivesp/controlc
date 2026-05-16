@@ -49,8 +49,16 @@ export const useDashboardStore = create<DashboardState>()(
         
         if (!error && data && data.length > 0) {
           set({ items: data, isLoading: false });
-        } else if (!error && (!data || data.length === 0)) {
-          // Initialize with defaults if DB is empty
+        } else if (!error) {
+          const currentItems = get().items;
+          if (currentItems.length > 0) {
+            // We have local items, let's sync them to the DB instead of using defaults
+            set({ isLoading: false });
+            await supabase.from('shortcuts').insert(currentItems);
+            return;
+          }
+
+          // Initialize with defaults if DB and local storage are empty
           const defaults: DashboardItem[] = [
             { id: 'photos', title: 'Fotos', iconName: 'Image', link: '/media?tab=photos', color: '#667eea', is_quick_access: true, order_index: 0 },
             { id: 'videos', title: 'Vídeos', iconName: 'Video', link: '/media?tab=videos', color: '#f5576c', is_quick_access: true, order_index: 1 },

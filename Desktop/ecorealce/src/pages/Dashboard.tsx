@@ -179,10 +179,15 @@ export default function Dashboard() {
   });
 
   useEffect(() => {
+    let isMounted = true;
     fetchItems().then(() => {
+      if (!isMounted) return;
+      // Check if we have any items at all
+      const currentItems = useDashboardStore.getState().items;
+      
       // Auto-add "Textos" if it doesn't exist yet (user request)
-      const hasTextos = useDashboardStore.getState().items.some(i => i.id === 'textos' || i.title === 'Textos');
-      if (!hasTextos) {
+      const hasTextos = currentItems.some(i => i && (i.id === 'textos' || i.title === 'Textos'));
+      if (!hasTextos && currentItems.length > 0) {
         addItem({
           id: 'textos',
           title: 'Textos',
@@ -192,8 +197,11 @@ export default function Dashboard() {
           is_quick_access: true
         });
       }
-    }).catch(console.error);
-  }, [fetchItems, addItem]);
+    }).catch(err => {
+      console.error('Error fetching dashboard items:', err);
+    });
+    return () => { isMounted = false; };
+  }, [fetchItems]); // Removed addItem to prevent potential loop if addItem changes state
 
   const handleOpenAdd = () => {
     setEditingItem(null);
@@ -243,15 +251,17 @@ export default function Dashboard() {
 
   const navigate = useNavigate();
 
-  const quickAccessItems = items.filter(i => i.is_quick_access);
-  const otherItems = items.filter(i => !i.is_quick_access);
+  const quickAccessItems = items.filter(i => i && i.is_quick_access);
+  const otherItems = items.filter(i => i && !i.is_quick_access);
 
-  const getQuickAccessGlow = (color: string) => {
-    return color.length === 7 ? `${color}80` : 'rgba(0,102,255,0.5)';
+  const getQuickAccessGlow = (color: string | undefined) => {
+    const safeColor = color || '#0066ff';
+    return safeColor.length === 7 ? `${safeColor}80` : 'rgba(0,102,255,0.5)';
   };
 
-  const getQuickAccessGradient = (color: string) => {
-    return `linear-gradient(135deg, ${color} 0%, ${color}dd 100%)`;
+  const getQuickAccessGradient = (color: string | undefined) => {
+    const safeColor = color || '#0066ff';
+    return `linear-gradient(135deg, ${safeColor} 0%, ${safeColor}dd 100%)`;
   };
 
   return (
@@ -367,14 +377,16 @@ export default function Dashboard() {
                 {isEditMode && (
                   <div style={{ display: 'flex', gap: '4px', position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', zIndex: 110 }}>
                      <button 
-                       onClick={() => i > 0 && moveItem(items.indexOf(item), items.indexOf(quickAccessItems[i - 1]))}
-                       style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(4px)', color: 'white', borderRadius: '6px', padding: '4px 10px', fontSize: '12px', border: '1px solid rgba(255,255,255,0.1)' }}
+                       type="button"
+                       onClick={(e) => { e.stopPropagation(); i > 0 && moveItem(items.indexOf(item), items.indexOf(quickAccessItems[i - 1])); }}
+                       style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(8px)', color: 'white', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer' }}
                      >
                        ◀
                      </button>
                      <button 
-                       onClick={() => i < quickAccessItems.length - 1 && moveItem(items.indexOf(item), items.indexOf(quickAccessItems[i + 1]))}
-                       style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(4px)', color: 'white', borderRadius: '6px', padding: '4px 10px', fontSize: '12px', border: '1px solid rgba(255,255,255,0.1)' }}
+                       type="button"
+                       onClick={(e) => { e.stopPropagation(); i < quickAccessItems.length - 1 && moveItem(items.indexOf(item), items.indexOf(quickAccessItems[i + 1])); }}
+                       style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(8px)', color: 'white', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer' }}
                      >
                        ▶
                      </button>
