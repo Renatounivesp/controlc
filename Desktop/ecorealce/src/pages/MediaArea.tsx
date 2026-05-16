@@ -6,7 +6,7 @@ import { Image as ImageIcon, Video, CheckCircle2, MessageCircle, X, Plus, Trash2
 
 export default function MediaArea() {
   const [searchParams] = useSearchParams();
-  const { categories, mediaList, addCategory, removeCategory, addMedia, removeMedia, updateMedia, fetchMedia } = useMediaStore();
+  const { categories, mediaList, addCategory, removeCategory, addMedia, removeMedia, updateMedia, fetchMedia, isLoading } = useMediaStore();
   const initialTab = searchParams.get('tab') === 'videos' ? 'videos' : 'photos';
   const [activeTab, setActiveTab] = useState<'photos' | 'videos'>(initialTab);
   const [activeCategory, setActiveCategory] = useState('Todos');
@@ -116,20 +116,19 @@ export default function MediaArea() {
     );
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
-    Array.from(files).forEach((file, index) => {
-      const newItem: MediaItem = {
-        id: Date.now() + index,
-        type: file.type.startsWith('video') ? 'video' : 'photo',
+    for (const file of Array.from(files)) {
+      const type = file.type.startsWith('video') ? 'video' : 'photo';
+      const itemData = {
+        type: type as 'photo' | 'video',
         title: file.name,
         category: activeCategory === 'Todos' ? 'Clientes' : activeCategory,
-        url: URL.createObjectURL(file)
       };
-      addMedia(newItem);
-    });
+      await addMedia(file, itemData);
+    }
   };
 
   const handleAddCategory = () => {
@@ -197,19 +196,21 @@ export default function MediaArea() {
             color: 'white', 
             fontWeight: 600, 
             background: 'var(--primary)', 
-            cursor: 'pointer',
+            cursor: isLoading ? 'not-allowed' : 'pointer',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            borderRadius: '12px'
+            borderRadius: '12px',
+            opacity: isLoading ? 0.7 : 1
           }}>
-            <ImageIcon size={20} /> + Subir Foto
+            <ImageIcon size={20} /> {isLoading ? 'Subindo...' : '+ Subir Foto'}
             <input 
               type="file" 
               multiple 
               accept="image/*,video/*" 
               onChange={handleFileUpload} 
               style={{ display: 'none' }} 
+              disabled={isLoading}
             />
           </label>
         </div>
