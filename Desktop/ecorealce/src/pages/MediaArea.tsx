@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'react-router-dom';
 import { useMediaStore, type MediaItem } from '../store/useMediaStore';
-import { Image as ImageIcon, Video, CheckCircle2, X, Plus, Trash2, ChevronDown, ChevronUp, Pencil, Save, Share2, Eye } from 'lucide-react';
+import { Image as ImageIcon, Video, CheckCircle2, X, Plus, Trash2, ChevronDown, ChevronUp, Pencil, Save, Share2, Eye, MessageCircle } from 'lucide-react';
 
 export default function MediaArea() {
   const [searchParams] = useSearchParams();
@@ -155,6 +155,31 @@ export default function MediaArea() {
     const message = `Olá! Veja estas opções da Realce Film:\n\n${selectedMedia.map(m => `*${m.title}*\n${m.url}`).join('\n\n')}`;
     const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
+  };
+
+  const handleGenericShare = async () => {
+    const selectedMedia = mediaList.filter(m => selectedIds.includes(m.id));
+    if (selectedMedia.length === 0) return;
+
+    const shareData = {
+      title: 'Realce Film - Mídias',
+      text: `Olá! Veja estas mídias da Realce Film:\n\n${selectedMedia.map(m => m.title).join(', ')}`,
+      url: selectedMedia[0].url // Navigator.share usually only takes one URL, we'll share the first or a list in text
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          ...shareData,
+          text: `Olá! Veja estas opções da Realce Film:\n\n${selectedMedia.map(m => `*${m.title}*\n${m.url}`).join('\n\n')}`
+        });
+      } else {
+        await navigator.clipboard.writeText(shareData.text);
+        alert('Links copiados para a área de transferência!');
+      }
+    } catch (err) {
+      console.error('Error sharing:', err);
+    }
   };
 
   const handleOpenEdit = (media: MediaItem, e: React.MouseEvent) => {
@@ -436,24 +461,46 @@ export default function MediaArea() {
               <div>
                 <span style={{ fontWeight: 600, fontSize: isMobile ? '0.9rem' : '1rem' }}>{selectedIds.length} selecionados</span>
               </div>
-              <button 
-                onClick={shareOnWhatsApp}
-                style={{
-                  background: 'var(--primary)',
-                  color: 'white',
-                  padding: isMobile ? '8px 16px' : '10px 24px',
-                  borderRadius: '12px',
-                  fontWeight: 700,
-                  fontSize: isMobile ? '0.85rem' : '1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  boxShadow: '0 4px 12px rgba(0, 102, 255, 0.3)'
-                }}
-              >
-                <Share2 size={isMobile ? 16 : 20} />
-                {isMobile ? 'Enviar' : 'Enviar WhatsApp'}
-              </button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button 
+                  onClick={shareOnWhatsApp}
+                  style={{
+                    background: '#25D366',
+                    color: 'white',
+                    padding: isMobile ? '8px' : '10px 16px',
+                    borderRadius: '12px',
+                    fontWeight: 700,
+                    fontSize: isMobile ? '0.85rem' : '1rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    boxShadow: '0 4px 12px rgba(37, 211, 102, 0.3)'
+                  }}
+                  title="Enviar via WhatsApp"
+                >
+                  <MessageCircle size={isMobile ? 18 : 20} />
+                  {!isMobile && 'WhatsApp'}
+                </button>
+                <button 
+                  onClick={handleGenericShare}
+                  style={{
+                    background: 'var(--primary)',
+                    color: 'white',
+                    padding: isMobile ? '8px' : '10px 16px',
+                    borderRadius: '12px',
+                    fontWeight: 700,
+                    fontSize: isMobile ? '0.85rem' : '1rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    boxShadow: '0 4px 12px rgba(0, 102, 255, 0.3)'
+                  }}
+                  title="Mais Opções de Compartilhamento"
+                >
+                  <Share2 size={isMobile ? 18 : 20} />
+                  {!isMobile && 'Compartilhar'}
+                </button>
+              </div>
             </div>
           </motion.div>
         )}

@@ -1,4 +1,4 @@
-import { Plus, ExternalLink, X, Trash2, Pencil } from 'lucide-react';
+import { Plus, ExternalLink, X, Trash2, Pencil, Share2 } from 'lucide-react';
 import GlassCard from '../components/GlassCard';
 import { useQuickLinksStore, type QuickLink } from '../store/useQuickLinksStore';
 import { useState, useEffect } from 'react';
@@ -29,6 +29,23 @@ export default function QuickLinks() {
     setEditingLink(link);
     setFormData(link);
     setIsModalOpen(true);
+  };
+
+  const handleShare = async (link: QuickLink) => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: link.title,
+          text: `Acesse o sistema ${link.title}:`,
+          url: link.url.startsWith('http') ? link.url : `https://${link.url}`
+        });
+      } else {
+        await navigator.clipboard.writeText(link.url.startsWith('http') ? link.url : `https://${link.url}`);
+        alert('Link copiado para a área de transferência!');
+      }
+    } catch (err) {
+      console.error('Error sharing:', err);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -115,6 +132,13 @@ export default function QuickLinks() {
                   <ExternalLink size={28} />
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
+                  <button 
+                    onClick={() => handleShare(link)}
+                    style={{ color: 'var(--primary)', padding: '4px', background: 'rgba(0, 102, 255, 0.1)', borderRadius: '8px' }}
+                    title="Compartilhar"
+                  >
+                    <Share2 size={18} />
+                  </button>
                   <button 
                     onClick={() => handleOpenEdit(link)}
                     style={{ color: 'var(--text-muted)', padding: '4px' }}
