@@ -15,6 +15,7 @@ export interface DashboardItem {
   color: string;
   imageUrl?: string;
   order_index?: number;
+  is_quick_access?: boolean;
 }
 
 interface DashboardState {
@@ -48,6 +49,18 @@ export const useDashboardStore = create<DashboardState>()(
         
         if (!error && data && data.length > 0) {
           set({ items: data, isLoading: false });
+        } else if (!error && (!data || data.length === 0)) {
+          // Initialize with defaults if DB is empty
+          const defaults: DashboardItem[] = [
+            { id: 'photos', title: 'Fotos', iconName: 'Image', link: '/media?tab=photos', color: '#667eea', is_quick_access: true, order_index: 0 },
+            { id: 'videos', title: 'Vídeos', iconName: 'Video', link: '/media?tab=videos', color: '#f5576c', is_quick_access: true, order_index: 1 },
+            { id: 'orcamentos', title: 'Orçamentos', iconName: 'FileText', link: '/documents', color: '#4facfe', is_quick_access: true, order_index: 2 },
+            { id: 'calculator', title: 'Calculadora', iconName: 'Calculator', link: '/calculator', color: '#38ef7d', is_quick_access: true, order_index: 3 },
+            { id: 'notepad', title: 'Anotações', iconName: 'NotebookPen', link: '/notepad', color: '#ffd200', is_quick_access: true, order_index: 4 },
+            { id: 'agenda', title: 'Agenda', iconName: 'Calendar', link: '/agenda', color: '#00c6ff', is_quick_access: true, order_index: 5 },
+          ];
+          set({ items: defaults, isLoading: false });
+          await supabase.from('shortcuts').insert(defaults);
         } else {
           set({ isLoading: false });
         }

@@ -230,68 +230,16 @@ export default function Dashboard() {
 
   const navigate = useNavigate();
 
-  const quickAccess = [
-    {
-      id: 'photos',
-      label: 'Fotos',
-      Icon: ImageIcon,
-      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      glow: 'rgba(102, 126, 234, 0.5)',
-      accent: '#667eea',
-      path: '/media?tab=photos',
-      description: 'Portfólio de imagens'
-    },
-    {
-      id: 'videos',
-      label: 'Vídeos',
-      Icon: Video,
-      gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-      glow: 'rgba(245, 87, 108, 0.5)',
-      accent: '#f5576c',
-      path: '/media?tab=videos',
-      description: 'Galeria de vídeos'
-    },
-    {
-      id: 'orcamentos',
-      label: 'Orçamentos',
-      Icon: FileText,
-      gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-      glow: 'rgba(79, 172, 254, 0.5)',
-      accent: '#4facfe',
-      path: '/documents',
-      description: 'Propostas e contratos'
-    },
-    {
-      id: 'calculator',
-      label: 'Calculadora',
-      Icon: Calculator,
-      gradient: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
-      glow: 'rgba(56, 239, 125, 0.5)',
-      accent: '#38ef7d',
-      path: '/calculator',
-      description: 'Cálculos rápidos'
-    },
-    {
-      id: 'notepad',
-      label: 'Anotações',
-      Icon: NotebookPen,
-      gradient: 'linear-gradient(135deg, #f7971e 0%, #ffd200 100%)',
-      glow: 'rgba(255, 210, 0, 0.5)',
-      accent: '#ffd200',
-      path: '/notepad',
-      description: 'Bloco de notas'
-    },
-    {
-      id: 'agenda',
-      label: 'Agenda',
-      Icon: Calendar,
-      gradient: 'linear-gradient(135deg, #00c6ff 0%, #0072ff 100%)',
-      glow: 'rgba(0, 198, 255, 0.5)',
-      accent: '#00c6ff',
-      path: '/agenda',
-      description: 'Compromissos'
-    },
-  ];
+  const quickAccessItems = items.filter(i => i.is_quick_access);
+  const otherItems = items.filter(i => !i.is_quick_access);
+
+  const getQuickAccessGlow = (color: string) => {
+    return color.length === 7 ? `${color}80` : 'rgba(0,102,255,0.5)';
+  };
+
+  const getQuickAccessGradient = (color: string) => {
+    return `linear-gradient(135deg, ${color} 0%, ${color}dd 100%)`;
+  };
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
@@ -335,73 +283,85 @@ export default function Dashboard() {
           gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
           gap: '16px',
         }}>
-          {quickAccess.map((item, i) => (
-            <motion.button
-              key={item.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: i * 0.1 }}
-              whileHover={{ y: -6, scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => navigate(item.path)}
-              style={{
-                position: 'relative',
-                height: '160px',
-                borderRadius: '24px',
-                overflow: 'hidden',
-                cursor: 'pointer',
-                border: '1px solid rgba(255,255,255,0.08)',
-                background: 'rgba(255,255,255,0.02)',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '12px',
-                textAlign: 'center',
-                padding: '20px',
-              }}
+          {quickAccessItems.map((item, i) => {
+            const Icon = getIconByName(item.iconName);
+            const gradient = getQuickAccessGradient(item.color);
+            const glow = getQuickAccessGlow(item.color);
+            
+            return (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: i * 0.1 }}
+                style={{ position: 'relative' }}
+              >
+                <motion.button
+                  whileHover={isEditMode ? {} : { y: -6, scale: 1.02 }}
+                  whileTap={isEditMode ? {} : { scale: 0.97 }}
+                  onClick={() => {
+                    if (isEditMode) return;
+                    let url = item.link;
+                    if (url.startsWith('/')) navigate(url);
+                    else window.open(url.startsWith('http') ? url : `https://${url}`, '_blank');
+                  }}
+                  style={{
+                    width: '100%',
+                    position: 'relative',
+                    height: '160px',
+                    borderRadius: '24px',
+                    overflow: 'hidden',
+                    cursor: isEditMode ? 'default' : 'pointer',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    background: 'rgba(255,255,255,0.02)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '12px',
+                    textAlign: 'center',
+                    padding: '20px',
+                  }}
+                >
+                  <div style={{ position: 'absolute', inset: 0, background: gradient, opacity: 0.08 }} />
+                  <div style={{ position: 'absolute', top: 0, left: '20%', right: '20%', height: '2px', background: gradient, borderRadius: '0 0 8px 8px', boxShadow: `0 0 20px ${glow}` }} />
+                  <div style={{ width: '60px', height: '60px', borderRadius: '18px', background: gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 8px 25px ${glow}`, position: 'relative', zIndex: 1 }}>
+                    <Icon size={28} color="white" strokeWidth={2} />
+                  </div>
+                  <div style={{ position: 'relative', zIndex: 1 }}>
+                    <p style={{ fontSize: '1rem', fontWeight: 700, color: 'white', marginBottom: '2px' }}>{item.title}</p>
+                    <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 400 }}>Acesso Rápido</p>
+                  </div>
+                </button>
+
+                {isEditMode && (
+                  <div style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', gap: '6px', zIndex: 100 }}>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); handleOpenEdit(item); }}
+                      style={{ background: 'var(--primary)', color: 'white', width: '32px', height: '32px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      <Pencil size={14} />
+                    </button>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); if (window.confirm('Excluir?')) removeItem(item.id); }}
+                      style={{ background: 'var(--danger)', color: 'white', width: '32px', height: '32px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                )}
+              </motion.div>
+            );
+          })}
+          {isEditMode && (
+            <motion.button 
+              onClick={() => { setFormData({ ...formData, is_quick_access: true }); handleOpenAdd(); }}
+              style={{ height: '160px', borderRadius: '24px', border: '2px dashed rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'var(--text-muted)' }}
             >
-              {/* Background gradient blob */}
-              <div style={{
-                position: 'absolute',
-                inset: 0,
-                background: item.gradient,
-                opacity: 0.08,
-                transition: 'opacity 0.3s'
-              }} />
-              {/* Glow top bar */}
-              <div style={{
-                position: 'absolute',
-                top: 0,
-                left: '20%',
-                right: '20%',
-                height: '2px',
-                background: item.gradient,
-                borderRadius: '0 0 8px 8px',
-                boxShadow: `0 0 20px ${item.glow}`,
-              }} />
-              {/* Icon circle */}
-              <div style={{
-                width: '60px',
-                height: '60px',
-                borderRadius: '18px',
-                background: item.gradient,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: `0 8px 25px ${item.glow}`,
-                position: 'relative',
-                zIndex: 1,
-              }}>
-                <item.Icon size={28} color="white" strokeWidth={2} />
-              </div>
-              {/* Labels */}
-              <div style={{ position: 'relative', zIndex: 1 }}>
-                <p style={{ fontSize: '1rem', fontWeight: 700, color: 'white', marginBottom: '2px' }}>{item.label}</p>
-                <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 400 }}>{item.description}</p>
-              </div>
+              <Plus size={24} />
+              <span style={{ fontSize: '0.8rem' }}>Adicionar</span>
             </motion.button>
-          ))}
+          )}
         </div>
       </section>
 
@@ -418,7 +378,7 @@ export default function Dashboard() {
         padding: '4px'
       }}>
         <AnimatePresence mode="popLayout">
-          {items.map((item, index) => (
+          {otherItems.map((item, index) => (
             <DashboardItemCard 
               key={item.id} 
               item={item} 
@@ -585,7 +545,7 @@ export default function Dashboard() {
                 {!formData.imageUrl && (
                   <div style={{ display: 'flex', gap: '16px' }}>
                     <div style={{ flex: 1 }}>
-                      <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Cor</label>
+                      <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Cor do Ícone</label>
                       <input 
                         type="color" 
                         value={formData.color}
@@ -595,6 +555,18 @@ export default function Dashboard() {
                     </div>
                   </div>
                 )}
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', borderRadius: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', marginTop: '4px' }}>
+                  <input 
+                    type="checkbox" 
+                    id="is_quick_access"
+                    checked={formData.is_quick_access || false}
+                    onChange={(e) => setFormData({ ...formData, is_quick_access: e.target.checked })}
+                    style={{ width: '22px', height: '22px', cursor: 'pointer', accentColor: 'var(--primary)' }}
+                  />
+                  <label htmlFor="is_quick_access" style={{ cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, color: 'white' }}>Destaque no Acesso Rápido</label>
+                </div>
+
                 <button 
                   type="submit"
                   style={{
