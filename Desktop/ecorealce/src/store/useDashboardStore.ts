@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import { 
   Globe, Share2, Presentation, CheckCircle, Calculator, MessageCircle, 
   Cloud, Image, Video, BookOpen, Mic, Megaphone, FileSignature, 
-  Download, LayoutList, DollarSign, FileText, Briefcase 
+  Download, LayoutList, DollarSign, FileText, Briefcase, Type, Calendar, NotebookPen
 } from 'lucide-react';
 
 export interface DashboardItem {
@@ -58,6 +58,7 @@ export const useDashboardStore = create<DashboardState>()(
             { id: 'calculator', title: 'Calculadora', iconName: 'Calculator', link: '/calculator', color: '#38ef7d', is_quick_access: true, order_index: 3 },
             { id: 'notepad', title: 'Anotações', iconName: 'NotebookPen', link: '/notepad', color: '#ffd200', is_quick_access: true, order_index: 4 },
             { id: 'agenda', title: 'Agenda', iconName: 'Calendar', link: '/agenda', color: '#00c6ff', is_quick_access: true, order_index: 5 },
+            { id: 'textos', title: 'Textos', iconName: 'Type', link: '/notepad', color: '#a855f7', is_quick_access: true, order_index: 6 },
           ];
           set({ items: defaults, isLoading: false });
           await supabase.from('shortcuts').insert(defaults);
@@ -121,7 +122,7 @@ export const getIconByName = (name: string) => {
   const icons: Record<string, any> = {
     Globe, Share2, Presentation, CheckCircle, Calculator, MessageCircle, 
     Cloud, Image, Video, BookOpen, Mic, Megaphone, FileSignature, 
-    Download, LayoutList, DollarSign, FileText, Briefcase
+    Download, LayoutList, DollarSign, FileText, Briefcase, Type, Calendar, NotebookPen
   };
   return icons[name] || Globe;
 };

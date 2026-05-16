@@ -179,8 +179,21 @@ export default function Dashboard() {
   });
 
   useEffect(() => {
-    fetchItems().catch(console.error);
-  }, [fetchItems]);
+    fetchItems().then(() => {
+      // Auto-add "Textos" if it doesn't exist yet (user request)
+      const hasTextos = useDashboardStore.getState().items.some(i => i.id === 'textos' || i.title === 'Textos');
+      if (!hasTextos) {
+        addItem({
+          id: 'textos',
+          title: 'Textos',
+          iconName: 'Type',
+          link: '/notepad',
+          color: '#a855f7',
+          is_quick_access: true
+        });
+      }
+    }).catch(console.error);
+  }, [fetchItems, addItem]);
 
   const handleOpenAdd = () => {
     setEditingItem(null);
@@ -348,6 +361,23 @@ export default function Dashboard() {
                     >
                       <Trash2 size={14} />
                     </button>
+                  </div>
+                )}
+
+                {isEditMode && (
+                  <div style={{ display: 'flex', gap: '4px', position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', zIndex: 110 }}>
+                     <button 
+                       onClick={() => i > 0 && moveItem(items.indexOf(item), items.indexOf(quickAccessItems[i - 1]))}
+                       style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(4px)', color: 'white', borderRadius: '6px', padding: '4px 10px', fontSize: '12px', border: '1px solid rgba(255,255,255,0.1)' }}
+                     >
+                       ◀
+                     </button>
+                     <button 
+                       onClick={() => i < quickAccessItems.length - 1 && moveItem(items.indexOf(item), items.indexOf(quickAccessItems[i + 1]))}
+                       style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(4px)', color: 'white', borderRadius: '6px', padding: '4px 10px', fontSize: '12px', border: '1px solid rgba(255,255,255,0.1)' }}
+                     >
+                       ▶
+                     </button>
                   </div>
                 )}
               </motion.div>
