@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'react-router-dom';
 import { useMediaStore, type MediaItem } from '../store/useMediaStore';
-import { Image as ImageIcon, Video, CheckCircle2, X, Plus, Trash2, ChevronDown, ChevronUp, Pencil, Save, Share2, Eye, MessageCircle } from 'lucide-react';
+import { Image as ImageIcon, Video, CheckCircle2, X, Plus, Trash2, ChevronDown, ChevronUp, Pencil, Save, Share2, Eye, MessageCircle, Folder, ArrowLeft } from 'lucide-react';
 
 export default function MediaArea() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -261,8 +261,20 @@ export default function MediaArea() {
         gap: '20px' 
       }}>
         <div>
-          <h1 style={{ fontSize: isMobile ? '1.5rem' : '1.75rem', fontWeight: 700, marginBottom: '8px' }}>Área de Mídias</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: isMobile ? '0.85rem' : '1rem' }}>Organize fotos por categoria e envie para clientes.</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+            {activeCategory !== 'Todos' && (
+              <button 
+                onClick={() => setActiveCategory('Todos')}
+                style={{ color: 'var(--primary)', background: 'rgba(0, 102, 255, 0.1)', padding: '6px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <ArrowLeft size={20} />
+              </button>
+            )}
+            <h1 style={{ fontSize: isMobile ? '1.5rem' : '1.75rem', fontWeight: 700 }}>Área de Mídias</h1>
+          </div>
+          <p style={{ color: 'var(--text-muted)', fontSize: isMobile ? '0.85rem' : '1rem' }}>
+            {activeCategory === 'Todos' ? 'Escolha uma pasta para visualizar as mídias.' : `Visualizando pasta: ${activeCategory}`}
+          </p>
         </div>
         <div style={{ display: 'flex', gap: '10px', width: isMobile ? '100%' : 'auto', flexWrap: 'wrap' }}>
           {selectedIds.length > 0 && (
@@ -383,9 +395,75 @@ export default function MediaArea() {
         gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
         gap: '20px',
       }}>
-        {filteredMedia.length === 0 && !isLoading ? (
+        {activeCategory === 'Todos' ? (
+          // Folder View
+          categories.filter(cat => cat !== 'Todos').map((cat, idx) => {
+            const color = getColor(idx + 1);
+            const itemCount = (mediaList || []).filter(m => m && m.category === cat && (activeTab === 'photos' ? m.type === 'photo' : m.type === 'video')).length;
+            
+            return (
+              <motion.div
+                key={cat}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.05 }}
+                className="glass"
+                onClick={() => setActiveCategory(cat)}
+                style={{
+                  padding: '24px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '16px',
+                  textAlign: 'center',
+                  background: `linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)`,
+                  border: '1px solid rgba(255,255,255,0.05)',
+                  borderRadius: '24px',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+                whileHover={{ y: -8, background: 'rgba(255,255,255,0.08)', borderColor: `${color}40` }}
+              >
+                <div style={{
+                  width: '64px',
+                  height: '64px',
+                  borderRadius: '20px',
+                  background: `${color}15`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: color,
+                  marginBottom: '8px',
+                  boxShadow: `0 8px 20px ${color}10`
+                }}>
+                  <Folder size={32} fill={color} fillOpacity={0.2} />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'white', marginBottom: '4px' }}>{cat}</h3>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{itemCount} {activeTab === 'photos' ? 'fotos' : 'vídeos'}</p>
+                </div>
+                <div style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '3px',
+                  background: color,
+                  opacity: 0.3
+                }} />
+              </motion.div>
+            );
+          })
+        ) : filteredMedia.length === 0 && !isLoading ? (
           <div style={{ gridColumn: '1/-1', padding: '60px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
             <p>Nenhuma mídia encontrada nesta categoria.</p>
+            <button 
+              onClick={() => setActiveCategory('Todos')}
+              style={{ marginTop: '16px', color: 'var(--primary)', fontWeight: 600 }}
+            >
+              Voltar para Pastas
+            </button>
           </div>
         ) : (
           filteredMedia.map((media, index) => {
