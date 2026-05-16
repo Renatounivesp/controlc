@@ -1,4 +1,4 @@
-const CACHE_NAME = 'realce-hub-v2';
+const CACHE_NAME = 'realce-hub-v7';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

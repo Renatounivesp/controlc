@@ -166,7 +166,7 @@ function DashboardItemCard({ item, isEditMode, removeItem, onEdit, index, moveIt
 }
 
 export default function Dashboard() {
-  const { items, addItem, removeItem, updateItems, updateItem, fetchItems, isEditMode, setIsEditMode } = useDashboardStore();
+  const { items, addItem, removeItem, updateItems, updateItem, fetchItems, syncData, isEditMode, setIsEditMode } = useDashboardStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<DashboardItem | null>(null);
   const [formData, setFormData] = useState<Partial<DashboardItem>>({
@@ -272,6 +272,31 @@ export default function Dashboard() {
           <h1 style={{ fontSize: '1.4rem', fontWeight: 700 }}>Central Realce Film</h1>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>Bem-vindo ao painel de controle</p>
         </div>
+        <button 
+          onClick={() => {
+            if (window.confirm('Deseja sincronizar todos os atalhos agora? Isso irá atualizar sua tela com os dados mais recentes do servidor.')) {
+              syncData().then(() => {
+                alert('Sincronização concluída!');
+                window.location.reload(); // Force reload to ensure everything is fresh
+              });
+            }
+          }}
+          className="glass"
+          style={{ 
+            padding: '10px 14px', 
+            borderRadius: '12px', 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '8px', 
+            color: 'var(--success)', 
+            border: '1px solid rgba(16, 185, 129, 0.2)',
+            fontSize: '0.85rem',
+            fontWeight: 600
+          }}
+        >
+          <Cloud size={18} />
+          {isMobile ? 'Sinc' : 'Sincronizar'}
+        </button>
       </div>
 
       {/* Quick Access Section */}

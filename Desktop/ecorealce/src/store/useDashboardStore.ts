@@ -133,16 +133,21 @@ export const useDashboardStore = create<DashboardState>()(
 
       syncData: async () => {
         set({ isLoading: true });
-        // Clear local storage and fetch fresh
-        localStorage.removeItem('realce-dashboard-storage');
-        const { data, error } = await supabase
-          .from('shortcuts')
-          .select('*')
-          .order('order_index', { ascending: true });
-        
-        if (!error && data) {
-          set({ items: data, isLoading: false });
-        } else {
+        try {
+          const { data, error } = await supabase
+            .from('shortcuts')
+            .select('*')
+            .order('order_index', { ascending: true });
+          
+          if (error) throw error;
+          
+          if (data) {
+            set({ items: data, isLoading: false });
+            // Manual sync also clears localStorage for the next boot
+            localStorage.removeItem('realce-dashboard-storage');
+          }
+        } catch (err) {
+          console.error('Sync error:', err);
           set({ isLoading: false });
         }
       },
