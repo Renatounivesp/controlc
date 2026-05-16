@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, X, Pencil, Image as ImageIcon } from 'lucide-react';
+import { Plus, Trash2, X, Pencil, Image as ImageIcon, Cloud } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import GlassCard from '../components/GlassCard';
 import { useDashboardStore, getIconByName, type DashboardItem } from '../store/useDashboardStore';
@@ -168,6 +168,13 @@ function DashboardItemCard({ item, isEditMode, removeItem, onEdit, index, moveIt
 export default function Dashboard() {
   const { items, addItem, removeItem, updateItems, updateItem, fetchItems, syncData, isEditMode, setIsEditMode } = useDashboardStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   const [editingItem, setEditingItem] = useState<DashboardItem | null>(null);
   const [formData, setFormData] = useState<Partial<DashboardItem>>({
     title: '',
