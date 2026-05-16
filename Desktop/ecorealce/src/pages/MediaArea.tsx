@@ -23,6 +23,7 @@ export default function MediaArea() {
   
   const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [isSharing, setIsSharing] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -181,7 +182,57 @@ export default function MediaArea() {
     } catch (err) {
       console.error('Error sharing:', err);
       await navigator.clipboard.writeText(shareText);
-      alert('Links copiados para a área de transferência!');
+      alert('Links copiados!');
+    }
+  };
+
+  const handleFileShare = async () => {
+    const selectedMedia = (mediaList || []).filter(m => m && selectedIds.includes(m.id));
+    if (selectedMedia.length === 0) return;
+
+    setIsSharing(true);
+    
+    try {
+      if (navigator.share && navigator.canShare) {
+        const files: File[] = [];
+        
+        // Limitar a 5 arquivos por vez para evitar travamentos
+        const toProcess = selectedMedia.slice(0, 5);
+        
+        for (const item of toProcess) {
+          try {
+            // Fetch com CORS e cache-busting
+            const response = await fetch(`${item.url}?t=${Date.now()}`, {
+              mode: 'cors',
+              credentials: 'omit'
+            });
+            const blob = await response.blob();
+            const ext = item.type === 'video' ? 'mp4' : 'jpg';
+            const fileName = `${(item.title || 'midia').replace(/[^a-z0-9]/gi, '_')}.${ext}`;
+            files.push(new File([blob], fileName, { type: blob.type }));
+          } catch (e) {
+            console.error('Erro ao baixar arquivo:', e);
+          }
+        }
+
+        if (files.length > 0 && navigator.canShare({ files })) {
+          await navigator.share({
+            files,
+            title: 'Realce Film',
+            text: 'Veja estas mídias da Realce Film:'
+          });
+          setIsSharing(false);
+          return;
+        }
+      }
+      
+      throw new Error('Navegador não suporta compartilhamento de arquivos.');
+    } catch (err) {
+      console.error('File share error:', err);
+      alert('Seu celular não suporta o envio direto da foto. Vou enviar os links para você compartilhar.');
+      handleGenericShare();
+    } finally {
+      setIsSharing(false);
     }
   };
 
@@ -561,15 +612,17 @@ export default function MediaArea() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
-                    boxShadow: '0 4px 12px rgba(37, 211, 102, 0.3)'
+                    opacity: isSharing ? 0.5 : 1,
+                    cursor: isSharing ? 'not-allowed' : 'pointer'
                   }}
-                  title="Enviar via WhatsApp"
+                  title="Enviar apenas os links via WhatsApp"
+                  disabled={isSharing}
                 >
                   <MessageCircle size={isMobile ? 18 : 20} />
-                  WhatsApp
+                  {!isMobile && 'Zap (Links)'}
                 </button>
                 <button 
-                  onClick={handleGenericShare}
+                  onClick={handleFileShare}
                   style={{
                     background: 'var(--primary)',
                     color: 'white',
@@ -580,12 +633,15 @@ export default function MediaArea() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
-                    boxShadow: '0 4px 12px rgba(0, 102, 255, 0.3)'
+                    boxShadow: '0 4px 12px rgba(0, 102, 255, 0.3)',
+                    opacity: isSharing ? 0.7 : 1,
+                    cursor: isSharing ? 'wait' : 'pointer'
                   }}
-                  title="Mais Opções de Compartilhamento"
+                  title="Enviar FOTO REAL (como anexo)"
+                  disabled={isSharing}
                 >
                   <Share2 size={isMobile ? 18 : 20} />
-                  Compartilhar
+                  {isSharing ? 'Processando...' : isMobile ? 'FOTO' : 'Enviar Foto Real'}
                 </button>
               </div>
             </div>
