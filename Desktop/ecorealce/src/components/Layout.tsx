@@ -2,12 +2,24 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import { useDashboardStore } from '../store/useDashboardStore';
 
 export default function Layout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const theme = useDashboardStore(state => state.theme);
+  const isDark = theme === 'dark';
 
   return (
-    <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden', position: 'relative' }}>
+    <div className={isDark ? '' : 'light-theme'} style={{ 
+      display: 'flex', 
+      height: '100vh', 
+      width: '100vw', 
+      overflow: 'hidden', 
+      position: 'relative',
+      backgroundColor: 'var(--bg-dark)',
+      color: 'var(--text-main)',
+      transition: 'all 0.3s'
+    }}>
       {/* Sidebar Desktop */}
       <div className="sidebar-desktop">
         <Sidebar onClose={() => setIsSidebarOpen(false)} />

@@ -12,6 +12,22 @@
   --glass-border: rgba(255, 255, 255, 0.1);
   --danger: #ef4444;
   --success: #10b981;
+  --card-bg: rgba(255, 255, 255, 0.02);
+}
+
+.light-theme {
+  --bg-dark: #f8fafc;
+  --bg-dark-secondary: #f1f5f9;
+  --primary: #0066ff;
+  --primary-hover: #0052cc;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --border-color: rgba(0, 0, 0, 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.05);
+  --danger: #ef4444;
+  --success: #10b981;
+  --card-bg: rgba(0, 0, 0, 0.02);
 }
 
 * {
@@ -27,6 +43,7 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s, color 0.3s;
 }
 
 a {
