@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'react-router-dom';
 import { useMediaStore, type MediaItem } from '../store/useMediaStore';
-import { Image as ImageIcon, Video, CheckCircle2, X, Plus, Trash2, ChevronDown, ChevronUp, Pencil, Save, Eye, MessageCircle, Folder, ArrowLeft } from 'lucide-react';
+import { Image as ImageIcon, Video, CheckCircle2, X, Plus, Trash2, ChevronDown, ChevronUp, Pencil, Save, Eye, MessageCircle, Folder, ArrowLeft, Cloud } from 'lucide-react';
 
 export default function MediaArea() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -286,7 +286,29 @@ export default function MediaArea() {
             {activeCategory === 'Todos' ? 'Escolha uma pasta para visualizar as mídias.' : `Visualizando pasta: ${activeCategory}`}
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '10px', width: isMobile ? '100%' : 'auto', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '10px', width: isMobile ? '100%' : 'auto', flexWrap: 'wrap', alignItems: 'center' }}>
+          <button 
+            onClick={() => {
+              fetchMedia().then(() => alert('Galeria sincronizada!'));
+            }}
+            className="glass"
+            style={{ 
+              padding: '10px 14px', 
+              borderRadius: '12px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px', 
+              color: 'var(--success)', 
+              border: '1px solid rgba(16, 185, 129, 0.2)',
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              flex: isMobile ? 1 : 'initial',
+              justifyContent: 'center'
+            }}
+          >
+            <Cloud size={18} />
+            {isMobile ? 'Sinc' : 'Sincronizar Pastas'}
+          </button>
           {selectedIds.length > 0 && (
             <button 
               onClick={() => setSelectedIds([])}

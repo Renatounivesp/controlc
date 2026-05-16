@@ -22,11 +22,7 @@ interface MediaState {
   fetchMedia: () => Promise<void>;
 }
 
-const defaultCategories = [
-  'Todos', 'Automotivo', 'Residencial', 'Comercial', 'Nano Cerâmica', 
-  'Nano Carbono', 'Antivandalismo', 'Antes e Depois', 'Fachadas', 
-  'Sacadas', 'Escritórios', 'Clientes'
-];
+const defaultCategories = ['Todos'];
 
 export const useMediaStore = create<MediaState>()(
   persist(
@@ -108,7 +104,15 @@ export const useMediaStore = create<MediaState>()(
         try {
           const { data, error } = await supabase.from('media').select('*').order('id', { ascending: false });
           if (error) throw error;
-          set({ mediaList: data || [], isLoading: false });
+          
+          const media = data || [];
+          const dbCategories = [...new Set(media.map((m: any) => m.category))].filter(Boolean);
+          
+          set((state) => ({ 
+            mediaList: media, 
+            categories: [...new Set(['Todos', ...state.categories, ...dbCategories])],
+            isLoading: false 
+          }));
         } catch (err) {
           console.error('Error fetching media:', err);
           set({ isLoading: false });
