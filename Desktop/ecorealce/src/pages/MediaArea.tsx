@@ -367,13 +367,13 @@ export default function MediaArea() {
             <button 
               onClick={() => setIsCategoryMenuOpen(!isCategoryMenuOpen)}
               className="glass"
-              style={{ width: '100%', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'white', borderRadius: '16px' }}
+              style={{ width: '100%', padding: '12px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'white', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)' }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Filtro:</span>
-                <span style={{ fontWeight: 600, color: getColor(categories.indexOf(activeCategory)), fontSize: '1rem' }}>{activeCategory}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', opacity: 0.7 }}>Filtrar:</span>
+                <span style={{ fontWeight: 600, color: getColor(categories.indexOf(activeCategory)), fontSize: '0.95rem' }}>{activeCategory}</span>
               </div>
-              {isCategoryMenuOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              {isCategoryMenuOpen ? <ChevronUp size={18} style={{ opacity: 0.6 }} /> : <ChevronDown size={18} style={{ opacity: 0.6 }} />}
             </button>
             
             <AnimatePresence>
@@ -402,8 +402,8 @@ export default function MediaArea() {
 
       <div className="grid-responsive" style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-        gap: '20px',
+        gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(250px, 1fr))',
+        gap: isMobile ? '12px' : '20px',
       }}>
         {activeCategory === 'Todos' ? (
           // Folder View
@@ -420,38 +420,39 @@ export default function MediaArea() {
                 className="glass"
                 onClick={() => setActiveCategory(cat)}
                 style={{
-                  padding: '24px',
+                  padding: isMobile ? '16px 12px' : '24px',
                   cursor: 'pointer',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: '16px',
+                  gap: isMobile ? '10px' : '16px',
                   textAlign: 'center',
-                  background: `linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)`,
-                  border: '1px solid rgba(255,255,255,0.05)',
-                  borderRadius: '24px',
+                  background: `linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)`,
+                  border: '1px solid rgba(255,255,255,0.04)',
+                  borderRadius: isMobile ? '20px' : '24px',
                   position: 'relative',
                   overflow: 'hidden'
                 }}
-                whileHover={{ y: -8, background: 'rgba(255,255,255,0.08)', borderColor: `${color}40` }}
+                whileHover={{ y: -8, background: 'rgba(255,255,255,0.06)', borderColor: `${color}30` }}
               >
                 <div style={{
-                  width: '64px',
-                  height: '64px',
-                  borderRadius: '20px',
-                  background: `${color}15`,
+                  width: isMobile ? '48px' : '64px',
+                  height: isMobile ? '48px' : '64px',
+                  borderRadius: isMobile ? '14px' : '20px',
+                  background: `${color}10`,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: color,
-                  marginBottom: '8px',
-                  boxShadow: `0 8px 20px ${color}10`
+                  marginBottom: isMobile ? '4px' : '8px',
+                  boxShadow: `0 8px 20px ${color}05`,
+                  opacity: 0.8
                 }}>
-                  <Folder size={32} fill={color} fillOpacity={0.2} />
+                  <Folder size={isMobile ? 24 : 32} fill={color} fillOpacity={0.15} style={{ opacity: 0.7 }} />
                 </div>
                 <div>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'white', marginBottom: '4px' }}>{cat}</h3>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{itemCount} {activeTab === 'photos' ? 'fotos' : 'vídeos'}</p>
+                  <h3 style={{ fontSize: isMobile ? '0.9rem' : '1.1rem', fontWeight: 600, color: 'white', marginBottom: '2px' }}>{cat}</h3>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', opacity: 0.8 }}>{itemCount} {activeTab === 'photos' ? 'fotos' : 'vídeos'}</p>
                 </div>
                 <div style={{
                   position: 'absolute',
@@ -529,24 +530,25 @@ export default function MediaArea() {
                       }}
                       title="Editar"
                     >
-                      <Pencil size={16} />
+                      <Pencil size={14} style={{ opacity: 0.9 }} />
                     </button>
                     <button 
                       onClick={(e) => { e.stopPropagation(); setEditingMedia(media); setEditFormData({ title: media.title, category: media.category }); }}
                       style={{ 
                         color: 'white', 
-                        background: 'rgba(255, 255, 255, 0.2)', 
-                        backdropFilter: 'blur(4px)',
+                        background: 'rgba(255, 255, 255, 0.1)', 
+                        backdropFilter: 'blur(8px)',
                         borderRadius: '50%',
-                        width: '32px',
-                        height: '32px',
+                        width: '28px',
+                        height: '28px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
+                        border: '1px solid rgba(255,255,255,0.05)'
                       }}
                       title="Visualizar"
                     >
-                      <Eye size={16} />
+                      <Eye size={14} style={{ opacity: 0.9 }} />
                     </button>
                   </div>
                   {media.type === 'video' && !isSelected && (
