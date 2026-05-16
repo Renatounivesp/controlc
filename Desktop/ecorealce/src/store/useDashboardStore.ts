@@ -61,8 +61,20 @@ export const useDashboardStore = create<DashboardState>()(
       },
 
       removeItem: async (id) => {
+        // Update local state immediately for better UX
         set((state) => ({ items: state.items.filter((i) => i.id !== id) }));
-        await supabase.from('shortcuts').delete().eq('id', id);
+        
+        try {
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+          if (supabaseUrl) {
+            const { error } = await supabase.from('shortcuts').delete().eq('id', id);
+            if (error) throw error;
+          }
+        } catch (error) {
+          console.error('Error removing item from database:', error);
+          // Optional: Re-fetch items if you want to be sure UI matches DB after error
+          // get().fetchItems(); 
+        }
       },
 
       updateItems: async (items) => {

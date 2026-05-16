@@ -101,38 +101,45 @@ function DashboardItemCard({ item, isEditMode, removeItem, onEdit, index, moveIt
         )}
 
         {isEditMode && (
-          <div style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', gap: '4px', zIndex: 30 }}>
+          <div style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', gap: '8px', zIndex: 100 }}>
             <button 
               onClick={(e) => { e.stopPropagation(); onEdit(item); }}
               style={{
                 background: 'var(--primary)',
                 color: 'white',
-                width: '28px',
-                height: '28px',
-                borderRadius: '50%',
+                width: '36px',
+                height: '36px',
+                borderRadius: '12px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 4px 10px rgba(0, 102, 255, 0.3)',
+                boxShadow: '0 4px 12px rgba(0, 102, 255, 0.4)',
+                border: '1px solid rgba(255,255,255,0.2)'
               }}
             >
-              <Pencil size={14} />
+              <Pencil size={16} />
             </button>
             <button 
-              onClick={(e) => { e.stopPropagation(); removeItem(item.id); }}
+              onClick={(e) => { 
+                e.stopPropagation(); 
+                if (window.confirm(`Deseja realmente remover o atalho "${item.title}"?`)) {
+                  removeItem(item.id); 
+                }
+              }}
               style={{
                 background: 'var(--danger)',
                 color: 'white',
-                width: '28px',
-                height: '28px',
-                borderRadius: '50%',
+                width: '36px',
+                height: '36px',
+                borderRadius: '12px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 4px 10px rgba(239, 68, 68, 0.3)',
+                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)',
+                border: '1px solid rgba(255,255,255,0.2)'
               }}
             >
-              <Trash2 size={14} />
+              <Trash2 size={16} />
             </button>
           </div>
         )}
