@@ -29,6 +29,8 @@ interface DashboardState {
   updateItems: (items: DashboardItem[]) => Promise<void>;
   updateItem: (id: string, updates: Partial<DashboardItem>) => Promise<void>;
   syncData: () => Promise<void>;
+  pushToCloud: () => Promise<void>;
+  resetToDefaults: () => Promise<void>;
   theme: 'dark' | 'light';
   toggleTheme: () => void;
 }
@@ -48,9 +50,8 @@ export const useDashboardStore = create<DashboardState>()(
         const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
         
         if (!supabaseUrl || !supabaseKey) {
-          console.warn('Supabase credentials missing. Running in local mode.');
           if (get().items.length === 0) {
-             const defaults: DashboardItem[] = [
+             set({ items: [
                 { id: 'photos', title: 'Fotos', iconName: 'Image', link: '/media?tab=photos', color: '#667eea', is_quick_access: true, order_index: 0 },
                 { id: 'videos', title: 'Vídeos', iconName: 'Video', link: '/media?tab=videos', color: '#f5576c', is_quick_access: true, order_index: 1 },
                 { id: 'orcamentos', title: 'Orçamentos', iconName: 'FileText', link: '/documents', color: '#4facfe', is_quick_access: true, order_index: 2 },
@@ -58,8 +59,7 @@ export const useDashboardStore = create<DashboardState>()(
                 { id: 'notepad', title: 'Anotações', iconName: 'NotebookPen', link: '/notepad', color: '#ffd200', is_quick_access: true, order_index: 4 },
                 { id: 'agenda', title: 'Agenda', iconName: 'Calendar', link: '/agenda', color: '#00c6ff', is_quick_access: true, order_index: 5 },
                 { id: 'textos', title: 'Textos', iconName: 'Type', link: '/notepad', color: '#a855f7', is_quick_access: true, order_index: 6 },
-              ];
-              set({ items: defaults });
+              ] });
           }
           return;
         }
@@ -76,13 +76,15 @@ export const useDashboardStore = create<DashboardState>()(
           if (data && data.length > 0) {
             set({ items: data, isLoading: false });
           } else {
-            // Se o DB estiver vazio mas o local tiver dados, vamos subir pro DB
+            // DB está vazio
             const localItems = get().items;
             if (localItems && localItems.length > 0) {
+              // Temos dados locais, vamos salvar na nuvem
+              console.log('Uploading local items to cloud...');
               await supabase.from('shortcuts').insert(localItems);
             } else {
-              // Inicializar com padrões se tudo estiver vazio
-              const defaults: DashboardItem[] = [
+              // Nada em lugar nenhum, carregar padrões
+              const defaults = [
                 { id: 'photos', title: 'Fotos', iconName: 'Image', link: '/media?tab=photos', color: '#667eea', is_quick_access: true, order_index: 0 },
                 { id: 'videos', title: 'Vídeos', iconName: 'Video', link: '/media?tab=videos', color: '#f5576c', is_quick_access: true, order_index: 1 },
                 { id: 'orcamentos', title: 'Orçamentos', iconName: 'FileText', link: '/documents', color: '#4facfe', is_quick_access: true, order_index: 2 },
@@ -97,7 +99,7 @@ export const useDashboardStore = create<DashboardState>()(
             set({ isLoading: false });
           }
         } catch (err) {
-          console.error('Error fetching dashboard items:', err);
+          console.error('Fetch error:', err);
           set({ isLoading: false });
         }
       },
@@ -161,13 +163,34 @@ export const useDashboardStore = create<DashboardState>()(
           
           if (data) {
             set({ items: data, isLoading: false });
-            // Manual sync also clears localStorage for the next boot
-            localStorage.removeItem('realce-dashboard-storage');
           }
         } catch (err) {
           console.error('Sync error:', err);
           set({ isLoading: false });
         }
+      },
+      
+      resetToDefaults: async () => {
+        const defaults = [
+          { id: 'photos', title: 'Fotos', iconName: 'Image', link: '/media?tab=photos', color: '#667eea', is_quick_access: true, order_index: 0 },
+          { id: 'videos', title: 'Vídeos', iconName: 'Video', link: '/media?tab=videos', color: '#f5576c', is_quick_access: true, order_index: 1 },
+          { id: 'orcamentos', title: 'Orçamentos', iconName: 'FileText', link: '/documents', color: '#4facfe', is_quick_access: true, order_index: 2 },
+          { id: 'calculator', title: 'Calculadora', iconName: 'Calculator', link: '/calculator', color: '#38ef7d', is_quick_access: true, order_index: 3 },
+          { id: 'notepad', title: 'Anotações', iconName: 'NotebookPen', link: '/notepad', color: '#ffd200', is_quick_access: true, order_index: 4 },
+          { id: 'agenda', title: 'Agenda', iconName: 'Calendar', link: '/agenda', color: '#00c6ff', is_quick_access: true, order_index: 5 },
+          { id: 'textos', title: 'Textos', iconName: 'Type', link: '/notepad', color: '#a855f7', is_quick_access: true, order_index: 6 },
+        ];
+        set({ items: defaults });
+        await supabase.from('shortcuts').delete().not('id', 'is', null);
+        await supabase.from('shortcuts').insert(defaults);
+      },
+
+      pushToCloud: async () => {
+        set({ isLoading: true });
+        const items = get().items;
+        await supabase.from('shortcuts').delete().not('id', 'is', null);
+        await supabase.from('shortcuts').insert(items);
+        set({ isLoading: false });
       },
       
       toggleTheme: () => set((state) => ({ theme: state.theme === 'dark' ? 'light' : 'dark' })),

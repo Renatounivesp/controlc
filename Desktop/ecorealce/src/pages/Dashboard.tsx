@@ -166,7 +166,7 @@ function DashboardItemCard({ item, isEditMode, removeItem, onEdit, index, moveIt
 }
 
 export default function Dashboard() {
-  const { items, addItem, removeItem, updateItems, updateItem, fetchItems, syncData, isEditMode, setIsEditMode } = useDashboardStore();
+  const { items, addItem, removeItem, updateItems, updateItem, fetchItems, syncData, pushToCloud, resetToDefaults, isEditMode, setIsEditMode } = useDashboardStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
@@ -282,10 +282,11 @@ export default function Dashboard() {
         <div style={{ display: 'flex', gap: '8px' }}>
           <button 
             onClick={() => {
-              if (window.confirm('Deseja sincronizar todos os atalhos agora? Isso irá atualizar sua tela com os dados mais recentes do servidor.')) {
-                syncData().then(() => {
-                  alert('Sincronização concluída!');
-                });
+              const choice = window.confirm('O que você deseja fazer?\n\nOK: Baixar dados da nuvem (Sincronizar)\nCANCELAR: Enviar seus atalhos atuais para a nuvem');
+              if (choice) {
+                syncData().then(() => alert('Sincronização concluída!'));
+              } else {
+                pushToCloud().then(() => alert('Dados enviados para a nuvem com sucesso!'));
               }
             }}
             className="glass"
@@ -302,7 +303,7 @@ export default function Dashboard() {
             }}
           >
             <Cloud size={18} />
-            {isMobile ? 'Sinc' : 'Sincronizar Cloud'}
+            {isMobile ? 'Nuvem' : 'Gerenciar Nuvem'}
           </button>
         </div>
       </div>
