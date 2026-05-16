@@ -28,7 +28,7 @@ interface DashboardState {
   removeItem: (id: string) => Promise<void>;
   updateItems: (items: DashboardItem[]) => Promise<void>;
   updateItem: (id: string, updates: Partial<DashboardItem>) => Promise<void>;
-  syncData: () => Promise<void>;
+  syncData: () => Promise<boolean>;
   pushToCloud: () => Promise<void>;
   resetToDefaults: () => Promise<void>;
   theme: 'dark' | 'light';
@@ -161,12 +161,17 @@ export const useDashboardStore = create<DashboardState>()(
           
           if (error) throw error;
           
-          if (data) {
+          if (data && data.length > 0) {
             set({ items: data, isLoading: false });
+            return true;
+          } else {
+            set({ isLoading: false });
+            return false; // Indicamos que a nuvem está vazia
           }
         } catch (err) {
           console.error('Sync error:', err);
           set({ isLoading: false });
+          throw err;
         }
       },
       
