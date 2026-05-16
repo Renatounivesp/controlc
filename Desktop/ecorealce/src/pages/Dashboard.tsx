@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import GlassCard from '../components/GlassCard';
 import { useDashboardStore, getIconByName, type DashboardItem } from '../store/useDashboardStore';
 import { AnimatePresence, motion } from 'framer-motion';
+import { supabase } from '../lib/supabase';
 
 function DashboardItemCard({ item, isEditMode, removeItem, onEdit, index, moveItem }: { 
   item: DashboardItem, 
@@ -276,8 +277,22 @@ export default function Dashboard() {
       {/* Top bar: title */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', padding: '0 4px' }}>
         <div>
-          <h1 style={{ fontSize: '1.4rem', fontWeight: 700 }}>Central Realce Film</h1>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>Bem-vindo ao painel de controle</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <h1 style={{ fontSize: '1.4rem', fontWeight: 700 }}>Central Realce Film</h1>
+            <div 
+              title={(supabase as any).isMock ? "Modo Offline (Sem Chaves)" : "Conectado à Nuvem"}
+              style={{ 
+                width: '10px', 
+                height: '10px', 
+                borderRadius: '50%', 
+                background: (supabase as any).isMock ? '#ef4444' : '#10b981',
+                boxShadow: (supabase as any).isMock ? '0 0 10px #ef4444' : '0 0 10px #10b981'
+              }} 
+            />
+          </div>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+            {(supabase as any).isMock ? '⚠️ Erro de Conexão: Contate o Suporte' : 'Bem-vindo ao painel de controle'}
+          </p>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button 
