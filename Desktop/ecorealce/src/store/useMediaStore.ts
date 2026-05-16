@@ -80,10 +80,11 @@ export const useMediaStore = create<MediaState>()(
             mediaList: [newItem, ...state.mediaList],
             isLoading: false 
           }));
-        } catch (error) {
+        } catch (error: any) {
           console.error('Error uploading media:', error);
           set({ isLoading: false });
-          alert('Erro ao subir arquivo. Verifique se o bucket "media" existe no Supabase.');
+          const errorMessage = error.message || 'Erro desconhecido';
+          alert(`Erro ao subir arquivo: ${errorMessage}\n\nDica: Verifique no Supabase se o bucket "media" é público e se o limite de tamanho de arquivo permite vídeos.`);
         }
       },
 
