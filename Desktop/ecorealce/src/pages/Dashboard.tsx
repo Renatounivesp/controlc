@@ -278,6 +278,36 @@ export default function Dashboard() {
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+
+      {/* Top bar: title + edit button */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', padding: '0 4px' }}>
+        <div>
+          <h1 style={{ fontSize: '1.4rem', fontWeight: 700 }}>Central Realce Film</h1>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>Bem-vindo ao painel de controle</p>
+        </div>
+        <button
+          onClick={() => setIsEditMode(!isEditMode)}
+          style={{
+            padding: '10px 20px',
+            borderRadius: '20px',
+            background: isEditMode ? 'var(--primary)' : 'rgba(255,255,255,0.06)',
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '0.85rem',
+            fontWeight: 600,
+            border: isEditMode ? 'none' : '1px solid rgba(255,255,255,0.1)',
+            cursor: 'pointer',
+            transition: 'all 0.3s',
+            boxShadow: isEditMode ? '0 4px 15px rgba(0,102,255,0.3)' : 'none',
+          }}
+        >
+          {isEditMode ? <Check size={16} /> : <Settings2 size={16} />}
+          {isEditMode ? 'Salvar' : 'Editar Atalhos'}
+        </button>
+      </div>
+
       {/* Quick Access Section */}
       <section style={{ marginBottom: '40px' }}>
         <h2 style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '16px', padding: '0 4px' }}>
@@ -358,37 +388,11 @@ export default function Dashboard() {
         </div>
       </section>
 
-      <header style={{ 
-        marginBottom: '20px', 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        padding: '0 4px'
-      }}>
+      <div style={{ marginBottom: '16px', padding: '0 4px' }}>
         <h2 style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
           Meus Atalhos
         </h2>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button 
-            onClick={() => setIsEditMode(!isEditMode)}
-            style={{ 
-              padding: '8px 16px', 
-              borderRadius: '20px',
-              background: isEditMode ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
-              color: 'white', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '6px',
-              fontSize: '0.85rem',
-              fontWeight: 600,
-              transition: 'all 0.3s'
-            }}
-          >
-            {isEditMode ? <Check size={16} /> : <Settings2 size={16} />}
-            {isEditMode ? 'Salvar' : 'Editar'}
-          </button>
-        </div>
-      </header>
+      </div>
 
       <div className="grid-responsive" style={{
         display: 'grid',
@@ -591,6 +595,40 @@ export default function Dashboard() {
               </form>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* Floating Add Button */}
+      <AnimatePresence>
+        {!isEditMode && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => { setIsEditMode(true); setTimeout(() => handleOpenAdd(), 100); }}
+            title="Adicionar novo atalho"
+            style={{
+              position: 'fixed',
+              bottom: '28px',
+              right: '28px',
+              width: '56px',
+              height: '56px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%)',
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 8px 25px rgba(0, 102, 255, 0.45)',
+              cursor: 'pointer',
+              zIndex: 500,
+              border: 'none',
+            }}
+          >
+            <Plus size={24} />
+          </motion.button>
         )}
       </AnimatePresence>
     </div>
