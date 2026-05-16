@@ -90,32 +90,32 @@ export default function Calculator() {
         <p style={{ color: 'var(--text-muted)' }}>Ferramenta de cálculos rápidos.</p>
       </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '24px', alignItems: 'start' }}>
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
         {/* Calculator */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="glass"
-          style={{ borderRadius: '28px', overflow: 'hidden', maxWidth: '360px', margin: '0 auto', width: '100%' }}
+          style={{ borderRadius: '28px', overflow: 'hidden', maxWidth: '400px', width: '100%' }}
         >
           {/* Display */}
           <div style={{
-            padding: '28px 24px 20px',
+            padding: '32px 24px 24px',
             background: 'linear-gradient(135deg, rgba(17,153,142,0.12) 0%, rgba(56,239,125,0.08) 100%)',
             borderBottom: '1px solid rgba(255,255,255,0.05)',
           }}>
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', minHeight: '18px', textAlign: 'right', marginBottom: '8px', fontFamily: 'monospace' }}>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', minHeight: '1.2rem', textAlign: 'right', marginBottom: '8px', fontFamily: 'monospace', opacity: 0.8 }}>
               {expression}
             </p>
             <p style={{
-              fontSize: display.length > 10 ? '1.8rem' : '3rem',
+              fontSize: display.length > 10 ? '2.2rem' : '3.5rem',
               fontWeight: 300,
               color: 'white',
               textAlign: 'right',
               lineHeight: 1,
               letterSpacing: '-1px',
               fontFamily: 'monospace',
-              transition: 'font-size 0.2s',
+              transition: 'all 0.2s',
               wordBreak: 'break-all'
             }}>
               {display}
@@ -123,21 +123,21 @@ export default function Calculator() {
           </div>
 
           {/* Buttons */}
-          <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {buttons.map((row, ri) => (
-              <div key={ri} style={{ display: 'grid', gridTemplateColumns: row.length === 3 ? '2fr 1fr 1fr' : 'repeat(4, 1fr)', gap: '8px' }}>
+              <div key={ri} style={{ display: 'grid', gridTemplateColumns: row.length === 3 ? '2fr 1fr 1fr' : 'repeat(4, 1fr)', gap: '10px' }}>
                 {row.map((btn) => (
                   <motion.button
                     key={btn}
-                    whileTap={{ scale: 0.92 }}
-                    whileHover={{ filter: 'brightness(1.1)' }}
+                    whileTap={{ scale: 0.94 }}
+                    whileHover={{ scale: 1.02, filter: 'brightness(1.15)' }}
                     onClick={() => handleButton(btn)}
                     style={{
                       padding: '0',
-                      height: '64px',
-                      borderRadius: '16px',
-                      fontSize: btn === '⌫' ? '1rem' : '1.3rem',
-                      fontWeight: isOperator(btn) || isFunction(btn) ? 600 : 400,
+                      height: '72px',
+                      borderRadius: '20px',
+                      fontSize: btn === '⌫' ? '1.1rem' : '1.4rem',
+                      fontWeight: isOperator(btn) || isFunction(btn) ? 700 : 500,
                       cursor: 'pointer',
                       transition: 'all 0.15s',
                       display: 'flex',
@@ -147,7 +147,8 @@ export default function Calculator() {
                         ? {
                             background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
                             color: '#0a0a0f',
-                            boxShadow: '0 6px 20px rgba(56, 239, 125, 0.4)',
+                            boxShadow: '0 8px 25px rgba(56, 239, 125, 0.4)',
+                            border: 'none',
                           }
                         : isOperator(btn)
                         ? {
@@ -168,37 +169,13 @@ export default function Calculator() {
                           }),
                     }}
                   >
-                    {btn === '⌫' ? <Delete size={20} /> : btn}
+                    {btn === '⌫' ? <Delete size={22} /> : btn}
                   </motion.button>
                 ))}
               </div>
             ))}
           </div>
         </motion.div>
-
-        {/* History */}
-        {history.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="glass"
-            style={{ borderRadius: '24px', padding: '20px', minWidth: '220px' }}
-          >
-            <p style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '16px' }}>Histórico</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {history.map((h, i) => (
-                <div
-                  key={i}
-                  style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', paddingBottom: '12px', cursor: 'pointer' }}
-                  onClick={() => { setDisplay(h.result); setJustEvaluated(true); }}
-                >
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{h.expression}</p>
-                  <p style={{ fontSize: '1.1rem', fontWeight: 600, color: '#38ef7d', fontFamily: 'monospace' }}>{h.result}</p>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
       </div>
     </div>
   );
