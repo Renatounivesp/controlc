@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'react-router-dom';
 import { useMediaStore, type MediaItem } from '../store/useMediaStore';
-import { Image as ImageIcon, Video, CheckCircle2, MessageCircle, X, Plus, Trash2 } from 'lucide-react';
+import { Image as ImageIcon, Video, CheckCircle2, MessageCircle, X, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 
 export default function MediaArea() {
   const [searchParams] = useSearchParams();
@@ -13,6 +13,95 @@ export default function MediaArea() {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
+  
+  const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const categoryColors = [
+    '#4facfe', '#f5576c', '#38ef7d', '#ffd200', '#a5b4fc', '#f093fb', '#00f2fe'
+  ];
+  const getColor = (index: number) => categoryColors[index % categoryColors.length];
+
+  const renderCategoryItem = (category: string, idx: number, isMobileItem: boolean = false) => {
+    const color = getColor(idx);
+    const isActive = activeCategory === category;
+    
+    return (
+      <div key={category} style={{ position: 'relative', display: 'flex', alignItems: 'center', width: isMobileItem ? '100%' : 'auto' }}>
+        <button
+          onClick={() => { setActiveCategory(category); setIsCategoryMenuOpen(false); }}
+          style={{
+            width: isMobileItem ? '100%' : 'auto',
+            padding: isMobileItem ? '12px 16px' : '8px 18px',
+            borderRadius: isMobileItem ? '12px' : '24px',
+            background: isActive ? `${color}20` : 'rgba(255, 255, 255, 0.03)',
+            border: `1px solid ${isActive ? color : 'rgba(255, 255, 255, 0.08)'}`,
+            color: isActive ? color : 'white',
+            fontSize: '0.85rem',
+            fontWeight: isActive ? 600 : 500,
+            display: 'flex',
+            justifyContent: isMobileItem ? 'space-between' : 'center',
+            alignItems: 'center',
+            gap: '8px',
+            transition: 'all 0.2s',
+            boxShadow: isActive ? `0 0 10px ${color}30` : 'none'
+          }}
+        >
+          {category}
+          {category !== 'Todos' && isActive && (
+            <X 
+              size={14} 
+              onClick={(e) => { e.stopPropagation(); removeCategory(category); setActiveCategory('Todos'); }} 
+              style={{ cursor: 'pointer', opacity: 0.8 }}
+            />
+          )}
+        </button>
+      </div>
+    );
+  };
+
+  const renderAddCategory = (isMobileItem: boolean = false) => {
+    return isAddingCategory ? (
+      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', padding: isMobileItem ? '8px 0' : '0' }}>
+        <input 
+          autoFocus
+          type="text" 
+          placeholder="Nova categoria..."
+          value={newCategoryName}
+          onChange={(e) => setNewCategoryName(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
+          className="glass-panel"
+          style={{ padding: '8px 14px', fontSize: '0.85rem', color: 'white', border: '1px solid var(--primary)', borderRadius: '20px', width: isMobileItem ? '100%' : '150px' }}
+        />
+        <button onClick={handleAddCategory} style={{ color: 'var(--success)' }}><CheckCircle2 size={24} /></button>
+        <button onClick={() => setIsAddingCategory(false)} style={{ color: 'var(--danger)' }}><X size={24} /></button>
+      </div>
+    ) : (
+      <button 
+        onClick={() => setIsAddingCategory(true)}
+        style={{ 
+          width: isMobileItem ? '100%' : 'auto',
+          padding: isMobileItem ? '12px 16px' : '8px 18px', 
+          borderRadius: isMobileItem ? '12px' : '24px', 
+          border: '1px dashed rgba(255,255,255,0.2)', 
+          color: 'var(--text-muted)',
+          fontSize: '0.85rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: isMobileItem ? 'flex-start' : 'center',
+          gap: '6px'
+        }}
+      >
+        <Plus size={16} /> Categoria
+      </button>
+    );
+  };
 
   useEffect(() => {
     fetchMedia().catch(console.error);
@@ -127,65 +216,42 @@ export default function MediaArea() {
         </button>
       </div>
 
-      <div style={{ display: 'flex', gap: '12px', marginBottom: '32px', overflowX: 'auto', paddingBottom: '8px', alignItems: 'center' }}>
-        {categories.map(category => (
-          <div key={category} style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-            <button
-              onClick={() => setActiveCategory(category)}
-              style={{
-                padding: '6px 16px', borderRadius: '20px', whiteSpace: 'nowrap',
-                background: activeCategory === category ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-                border: `1px solid ${activeCategory === category ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.05)'}`,
-                color: activeCategory === category ? 'white' : 'var(--text-muted)',
-                fontSize: '0.85rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
+      <div style={{ marginBottom: '32px', position: 'relative', zIndex: 10 }}>
+        {isMobile ? (
+          <div style={{ position: 'relative' }}>
+            <button 
+              onClick={() => setIsCategoryMenuOpen(!isCategoryMenuOpen)}
+              className="glass"
+              style={{ width: '100%', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'white', borderRadius: '16px' }}
             >
-              {category}
-              {category !== 'Todos' && activeCategory === category && (
-                <X 
-                  size={14} 
-                  onClick={(e) => { e.stopPropagation(); removeCategory(category); setActiveCategory('Todos'); }} 
-                  style={{ cursor: 'pointer', opacity: 0.6 }}
-                />
-              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Filtro:</span>
+                <span style={{ fontWeight: 600, color: getColor(categories.indexOf(activeCategory)), fontSize: '1rem' }}>{activeCategory}</span>
+              </div>
+              {isCategoryMenuOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
             </button>
-          </div>
-        ))}
-        
-        {isAddingCategory ? (
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <input 
-              autoFocus
-              type="text" 
-              placeholder="Nova categoria..."
-              value={newCategoryName}
-              onChange={(e) => setNewCategoryName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
-              className="glass-panel"
-              style={{ padding: '6px 12px', fontSize: '0.85rem', color: 'white', border: '1px solid var(--primary)', borderRadius: '20px', width: '150px' }}
-            />
-            <button onClick={handleAddCategory} style={{ color: 'var(--success)' }}><CheckCircle2 size={20} /></button>
-            <button onClick={() => setIsAddingCategory(false)} style={{ color: 'var(--danger)' }}><X size={20} /></button>
+            
+            <AnimatePresence>
+              {isCategoryMenuOpen && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="glass-panel"
+                  style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '350px', overflowY: 'auto', zIndex: 20 }}
+                >
+                  {categories.map((cat, idx) => renderCategoryItem(cat, idx, true))}
+                  <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '8px 0' }} />
+                  {renderAddCategory(true)}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         ) : (
-          <button 
-            onClick={() => setIsAddingCategory(true)}
-            style={{ 
-              padding: '6px 12px', 
-              borderRadius: '20px', 
-              border: '1px dashed rgba(255,255,255,0.2)', 
-              color: 'var(--text-muted)',
-              fontSize: '0.85rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}
-          >
-            <Plus size={14} /> Categoria
-          </button>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
+            {categories.map((cat, idx) => renderCategoryItem(cat, idx, false))}
+            {renderAddCategory(false)}
+          </div>
         )}
       </div>
 
