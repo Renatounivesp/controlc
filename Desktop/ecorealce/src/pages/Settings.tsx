@@ -216,6 +216,91 @@ export default function Settings() {
               </div>
             </GlassCard>
 
+            {/* Emergency Cloud Push */}
+            <GlassCard style={{ padding: '16px 24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{ 
+                    width: '40px', 
+                    height: '40px', 
+                    borderRadius: '10px', 
+                    background: 'rgba(0,102,255,0.1)', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    color: 'var(--primary)'
+                  }}>
+                    <RefreshCw size={20} />
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'white' }}>Enviar para Nuvem</h3>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Sobe seus atalhos locais para o servidor</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={async () => {
+                    if (window.confirm('Isso irá substituir os atalhos da nuvem pelos que você tem agora neste navegador. Continuar?')) {
+                      await (useDashboardStore.getState() as any).pushToCloud();
+                      alert('Dados enviados com sucesso!');
+                    }
+                  }}
+                  style={{ 
+                    padding: '8px 20px', 
+                    borderRadius: '20px', 
+                    background: 'rgba(255,255,255,0.05)', 
+                    color: 'white',
+                    fontSize: '0.8rem', 
+                    fontWeight: 600
+                  }}
+                >
+                  Enviar
+                </button>
+              </div>
+            </GlassCard>
+
+            {/* Reset to Defaults */}
+            <GlassCard style={{ padding: '16px 24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{ 
+                    width: '40px', 
+                    height: '40px', 
+                    borderRadius: '10px', 
+                    background: 'rgba(239,68,68,0.1)', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    color: 'var(--danger)'
+                  }}>
+                    <RefreshCw size={20} />
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'white' }}>Restaurar Padrões</h3>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Limpa tudo e volta aos atalhos originais</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={async () => {
+                    if (window.confirm('TEM CERTEZA? Isso apagará todos os seus atalhos e voltará aos originais da Realce Film.')) {
+                      await (useDashboardStore.getState() as any).resetToDefaults();
+                      alert('Sistema restaurado!');
+                      window.location.reload();
+                    }
+                  }}
+                  style={{ 
+                    padding: '8px 20px', 
+                    borderRadius: '20px', 
+                    background: 'rgba(239, 68, 68, 0.1)', 
+                    color: 'var(--danger)',
+                    fontSize: '0.8rem', 
+                    fontWeight: 600
+                  }}
+                >
+                  Restaurar
+                </button>
+              </div>
+            </GlassCard>
+
           </div>
         </div>
       </div>
