@@ -203,7 +203,8 @@ export default function MediaArea() {
             borderRadius: '12px',
             opacity: isLoading ? 0.7 : 1
           }}>
-            <ImageIcon size={20} /> {isLoading ? 'Subindo...' : '+ Subir Foto'}
+            {activeTab === 'photos' ? <ImageIcon size={20} /> : <Video size={20} />} 
+            {isLoading ? 'Subindo...' : `+ Subir ${activeTab === 'photos' ? 'Foto' : 'Vídeo'}`}
             <input 
               type="file" 
               multiple 
