@@ -17,6 +17,14 @@ export default function Agenda() {
     notify: true
   });
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   useEffect(() => {
     fetchItems().catch(console.error);
   }, [fetchItems]);
@@ -49,16 +57,27 @@ export default function Agenda() {
   const filteredItems = items.filter(item => item.date === selectedDate.toISOString().split('T')[0]);
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-      <header style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: isMobile ? '0 10px' : '0' }}>
+      <header style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
         <div>
-          <h1 style={{ fontSize: '2.5rem', fontWeight: 800, letterSpacing: '-0.02em', background: 'linear-gradient(135deg, #fff 0%, #a5b4fc 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Agenda Interativa</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Gerencie seus compromissos e lembretes financeiros.</p>
+          <h1 style={{ 
+            fontSize: isMobile ? '1.8rem' : '2.5rem', 
+            fontWeight: 800, 
+            letterSpacing: '-0.02em', 
+            background: 'linear-gradient(135deg, #fff 0%, #a5b4fc 100%)', 
+            WebkitBackgroundClip: 'text', 
+            WebkitTextFillColor: 'transparent',
+            lineHeight: 1.1
+          }}>
+            Agenda Interativa
+          </h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: isMobile ? '0.9rem' : '1.1rem', marginTop: '4px' }}>Compromissos e lembretes financeiros.</p>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
           className="glass" 
           style={{ 
+            width: isMobile ? '100%' : 'auto',
             padding: '14px 28px', 
             background: 'var(--primary)', 
             color: 'white', 
@@ -66,6 +85,7 @@ export default function Agenda() {
             fontWeight: 700,
             display: 'flex',
             alignItems: 'center',
+            justifyContent: 'center',
             gap: '10px',
             boxShadow: '0 10px 25px rgba(0, 102, 255, 0.4)'
           }}
@@ -74,7 +94,12 @@ export default function Agenda() {
         </button>
       </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '32px', alignItems: 'start' }}>
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: isMobile ? '1fr' : '1fr 1.5fr', 
+        gap: isMobile ? '24px' : '32px', 
+        alignItems: 'start' 
+      }}>
         <GlassCard style={{ padding: '24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Calendário</h2>
