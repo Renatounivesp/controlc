@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'react-router-dom';
 import { useMediaStore, type MediaItem } from '../store/useMediaStore';
-import { Image as ImageIcon, Video, CheckCircle2, X, Plus, Trash2, ChevronDown, ChevronUp, Pencil, Save, Share2 } from 'lucide-react';
+import { Image as ImageIcon, Video, CheckCircle2, X, Plus, Trash2, ChevronDown, ChevronUp, Pencil, Save, Share2, Eye } from 'lucide-react';
 
 export default function MediaArea() {
   const [searchParams] = useSearchParams();
@@ -353,27 +353,41 @@ export default function MediaArea() {
                     <CheckCircle2 size={24} fill="currentColor" color="white" />
                   </div>
                 )}
-                <button 
-                  onClick={(e) => handleOpenEdit(media, e)}
-                  style={{ 
-                    position: 'absolute', 
-                    top: '12px', 
-                    left: '12px', 
-                    color: 'white', 
-                    background: 'rgba(0, 102, 255, 0.8)', 
-                    borderRadius: '50%',
-                    width: '32px',
-                    height: '32px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    opacity: isSelected ? 0 : 1,
-                    transition: 'opacity 0.2s',
-                    zIndex: 20
-                  }}
-                >
-                  <Pencil size={16} />
-                </button>
+                <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '8px', zIndex: 20, opacity: isSelected ? 0 : 1, transition: 'opacity 0.2s' }}>
+                  <button 
+                    onClick={(e) => handleOpenEdit(media, e)}
+                    style={{ 
+                      color: 'white', 
+                      background: 'rgba(0, 102, 255, 0.8)', 
+                      borderRadius: '50%',
+                      width: '32px',
+                      height: '32px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                    title="Editar"
+                  >
+                    <Pencil size={16} />
+                  </button>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); setEditingMedia(media); setEditFormData({ title: media.title, category: media.category }); }}
+                    style={{ 
+                      color: 'white', 
+                      background: 'rgba(255, 255, 255, 0.2)', 
+                      backdropFilter: 'blur(4px)',
+                      borderRadius: '50%',
+                      width: '32px',
+                      height: '32px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                    title="Visualizar"
+                  >
+                    <Eye size={16} />
+                  </button>
+                </div>
                 {media.type === 'video' && !isSelected && (
                   <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(0,0,0,0.5)', borderRadius: '50%', padding: '12px', pointerEvents: 'none' }}>
                     <Video size={24} color="white" />
@@ -452,18 +466,18 @@ export default function MediaArea() {
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
               className="glass"
-              style={{ width: '100%', maxWidth: '400px', padding: '28px', zIndex: 1001, backgroundColor: 'rgba(15,15,20,0.95)', borderRadius: '24px' }}
+              style={{ width: '100%', maxWidth: '500px', padding: '32px', zIndex: 1001, backgroundColor: 'rgba(15,15,20,0.98)', borderRadius: '28px', border: '1px solid rgba(255,255,255,0.1)' }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Editar Mídia</h2>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Visualizar / Editar</h2>
                 <button onClick={() => setEditingMedia(null)} style={{ color: 'var(--text-muted)' }}><X /></button>
               </div>
 
-              <div style={{ marginBottom: '20px', borderRadius: '12px', overflow: 'hidden', height: '180px', background: '#000' }}>
+              <div style={{ marginBottom: '20px', borderRadius: '12px', overflow: 'hidden', height: '250px', background: '#000', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
                 {editingMedia.type === 'video' ? (
-                  <video src={editingMedia.url} controls style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                  <video src={editingMedia.url} controls autoPlay style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 ) : (
-                  <img src={editingMedia.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src={editingMedia.url} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 )}
               </div>
 
