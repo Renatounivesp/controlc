@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Settings2, Plus, Trash2, X, Check, Pencil, Image as ImageIcon } from 'lucide-react';
+import { Settings2, Plus, Trash2, X, Check, Pencil, Image as ImageIcon, Video, FileText, Calculator, NotebookPen } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import GlassCard from '../components/GlassCard';
 import { useDashboardStore, getIconByName, type DashboardItem } from '../store/useDashboardStore';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -220,16 +221,153 @@ export default function Dashboard() {
     }
   };
 
+  const navigate = useNavigate();
+
+  const quickAccess = [
+    {
+      id: 'photos',
+      label: 'Fotos',
+      Icon: ImageIcon,
+      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      glow: 'rgba(102, 126, 234, 0.5)',
+      accent: '#667eea',
+      path: '/media?tab=photos',
+      description: 'Portfólio de imagens'
+    },
+    {
+      id: 'videos',
+      label: 'Vídeos',
+      Icon: Video,
+      gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      glow: 'rgba(245, 87, 108, 0.5)',
+      accent: '#f5576c',
+      path: '/media?tab=videos',
+      description: 'Galeria de vídeos'
+    },
+    {
+      id: 'orcamentos',
+      label: 'Orçamentos',
+      Icon: FileText,
+      gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      glow: 'rgba(79, 172, 254, 0.5)',
+      accent: '#4facfe',
+      path: '/documents',
+      description: 'Propostas e contratos'
+    },
+    {
+      id: 'calculator',
+      label: 'Calculadora',
+      Icon: Calculator,
+      gradient: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+      glow: 'rgba(56, 239, 125, 0.5)',
+      accent: '#38ef7d',
+      path: '/calculator',
+      description: 'Cálculos rápidos'
+    },
+    {
+      id: 'notepad',
+      label: 'Anotações',
+      Icon: NotebookPen,
+      gradient: 'linear-gradient(135deg, #f7971e 0%, #ffd200 100%)',
+      glow: 'rgba(255, 210, 0, 0.5)',
+      accent: '#ffd200',
+      path: '/notepad',
+      description: 'Bloco de notas'
+    },
+  ];
+
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      {/* Quick Access Section */}
+      <section style={{ marginBottom: '40px' }}>
+        <h2 style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '16px', padding: '0 4px' }}>
+          Acesso Rápido
+        </h2>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+          gap: '16px',
+        }}>
+          {quickAccess.map((item, i) => (
+            <motion.button
+              key={item.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: i * 0.1 }}
+              whileHover={{ y: -6, scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => navigate(item.path)}
+              style={{
+                position: 'relative',
+                height: '160px',
+                borderRadius: '24px',
+                overflow: 'hidden',
+                cursor: 'pointer',
+                border: '1px solid rgba(255,255,255,0.08)',
+                background: 'rgba(255,255,255,0.02)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '12px',
+                textAlign: 'center',
+                padding: '20px',
+              }}
+            >
+              {/* Background gradient blob */}
+              <div style={{
+                position: 'absolute',
+                inset: 0,
+                background: item.gradient,
+                opacity: 0.08,
+                transition: 'opacity 0.3s'
+              }} />
+              {/* Glow top bar */}
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: '20%',
+                right: '20%',
+                height: '2px',
+                background: item.gradient,
+                borderRadius: '0 0 8px 8px',
+                boxShadow: `0 0 20px ${item.glow}`,
+              }} />
+              {/* Icon circle */}
+              <div style={{
+                width: '60px',
+                height: '60px',
+                borderRadius: '18px',
+                background: item.gradient,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: `0 8px 25px ${item.glow}`,
+                position: 'relative',
+                zIndex: 1,
+              }}>
+                <item.Icon size={28} color="white" strokeWidth={2} />
+              </div>
+              {/* Labels */}
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <p style={{ fontSize: '1rem', fontWeight: 700, color: 'white', marginBottom: '2px' }}>{item.label}</p>
+                <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 400 }}>{item.description}</p>
+              </div>
+            </motion.button>
+          ))}
+        </div>
+      </section>
+
       <header style={{ 
-        marginBottom: '32px', 
+        marginBottom: '20px', 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center', 
         padding: '0 4px'
       }}>
-        <div />
+        <h2 style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+          Meus Atalhos
+        </h2>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button 
             onClick={() => setIsEditMode(!isEditMode)}

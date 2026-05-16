@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSearchParams } from 'react-router-dom';
 import { useMediaStore, type MediaItem } from '../store/useMediaStore';
 import { Image as ImageIcon, Video, CheckCircle2, MessageCircle, X, Plus, Trash2 } from 'lucide-react';
 
 export default function MediaArea() {
+  const [searchParams] = useSearchParams();
   const { categories, mediaList, addCategory, removeCategory, addMedia, removeMedia, fetchMedia } = useMediaStore();
-  const [activeTab, setActiveTab] = useState<'photos' | 'videos'>('photos');
+  const initialTab = searchParams.get('tab') === 'videos' ? 'videos' : 'photos';
+  const [activeTab, setActiveTab] = useState<'photos' | 'videos'>(initialTab);
   const [activeCategory, setActiveCategory] = useState('Todos');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [isAddingCategory, setIsAddingCategory] = useState(false);

@@ -6,6 +6,8 @@ import MediaArea from './pages/MediaArea';
 import QuickLinks from './pages/QuickLinks';
 import Documents from './pages/Documents';
 import Settings from './pages/Settings';
+import Calculator from './pages/Calculator';
+import Notepad from './pages/Notepad';
 
 function App() {
   // Simple auth mock for now
@@ -23,6 +25,8 @@ function App() {
           <Route path="links" element={<QuickLinks />} />
           <Route path="documents" element={<Documents />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="calculator" element={<Calculator />} />
+          <Route path="notepad" element={<Notepad />} />
           {/* Add more routes here */}
         </Route>
       </Routes>
