@@ -1,7 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, NotebookPen, Loader2 } from 'lucide-react';
-import { useNoteStore, type Note } from '../store/useNoteStore';
+import { Plus, Trash2, NotebookPen } from 'lucide-react';
+
+interface Note {
+  id: string;
+  title: string;
+  content: string;
+  updatedAt: number;
+}
+
+const STORAGE_KEY = 'realce_notes';
 
 function formatDate(ts: number) {
   const d = new Date(ts);
@@ -9,45 +17,47 @@ function formatDate(ts: number) {
 }
 
 export default function Notepad() {
-  const { notes, isLoading, fetchNotes, addNote, updateNote, removeNote } = useNoteStore();
-  const [activeId, setActiveId] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchNotes();
-  }, [fetchNotes]);
-
-  // Set first note as active once loaded if none is active
-  useEffect(() => {
-    if (!activeId && notes.length > 0) {
-      setActiveId(notes[0].id);
+  const [notes, setNotes] = useState<Note[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
     }
-  }, [notes, activeId]);
+  });
+  const [activeId, setActiveId] = useState<string | null>(notes[0]?.id ?? null);
+  const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const activeNote = notes.find(n => n.id === activeId) ?? null;
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+  }, [notes]);
 
   const createNote = () => {
     const newNote: Note = {
       id: Date.now().toString(36),
       title: 'Nova nota',
       content: '',
-      updated_at: Date.now(),
+      updatedAt: Date.now(),
     };
-    addNote(newNote);
+    setNotes(prev => [newNote, ...prev]);
     setActiveId(newNote.id);
   };
 
   const deleteNote = (id: string) => {
     if (window.confirm('Deseja excluir esta nota?')) {
-      removeNote(id);
-      if (activeId === id) setActiveId(notes.find(n => n.id !== id)?.id ?? null);
+      setNotes(prev => prev.filter(n => n.id !== id));
+      setActiveId(prev => (prev === id ? notes.find(n => n.id !== id)?.id ?? null : prev));
     }
   };
 
-  const handleUpdate = (field: 'title' | 'content', value: string) => {
+  const updateNote = (field: 'title' | 'content', value: string) => {
     if (!activeId) return;
-    
-    // Optimistic local update via store
-    updateNote(activeId, { [field]: value });
+    if (saveTimeout.current) clearTimeout(saveTimeout.current);
+    setNotes(prev =>
+      prev.map(n => n.id === activeId ? { ...n, [field]: value, updatedAt: Date.now() } : n)
+    );
   };
 
   return (
@@ -55,34 +65,31 @@ export default function Notepad() {
       <header style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '8px' }}>Anotações</h1>
-          <p style={{ color: 'var(--text-muted)' }}>Notas sincronizadas na nuvem.</p>
+          <p style={{ color: 'var(--text-muted)' }}>Suas notas salvas localmente neste dispositivo.</p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {isLoading && <Loader2 size={20} className="animate-spin" style={{ color: 'var(--primary)' }} />}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={createNote}
-            style={{
-              padding: '12px 20px',
-              background: 'linear-gradient(135deg, #f7971e 0%, #ffd200 100%)',
-              color: '#0a0a0f',
-              borderRadius: '14px',
-              fontWeight: 700,
-              fontSize: '0.9rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              boxShadow: '0 6px 20px rgba(255, 210, 0, 0.35)',
-              cursor: 'pointer',
-            }}
-          >
-            <Plus size={18} /> Nova Nota
-          </motion.button>
-        </div>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={createNote}
+          style={{
+            padding: '12px 20px',
+            background: 'linear-gradient(135deg, #f7971e 0%, #ffd200 100%)',
+            color: '#0a0a0f',
+            borderRadius: '14px',
+            fontWeight: 700,
+            fontSize: '0.9rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            boxShadow: '0 6px 20px rgba(255, 210, 0, 0.35)',
+            cursor: 'pointer',
+          }}
+        >
+          <Plus size={18} /> Nova Nota
+        </motion.button>
       </header>
 
-      {notes.length === 0 && !isLoading ? (
+      {notes.length === 0 ? (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -127,7 +134,7 @@ export default function Notepad() {
                         {note.title || 'Sem título'}
                       </p>
                       <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                        {formatDate(note.updated_at)}
+                        {formatDate(note.updatedAt)}
                       </p>
                       <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', opacity: 0.7 }}>
                         {note.content.slice(0, 40) || 'Sem conteúdo'}
@@ -165,7 +172,7 @@ export default function Notepad() {
                 <input
                   type="text"
                   value={activeNote.title}
-                  onChange={e => handleUpdate('title', e.target.value)}
+                  onChange={e => updateNote('title', e.target.value)}
                   placeholder="Título da nota..."
                   style={{
                     width: '100%',
@@ -178,13 +185,13 @@ export default function Notepad() {
                   }}
                 />
                 <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                  Última edição: {formatDate(activeNote.updated_at)}
+                  Última edição: {formatDate(activeNote.updatedAt)}
                 </p>
               </div>
               {/* Content */}
               <textarea
                 value={activeNote.content}
-                onChange={e => handleUpdate('content', e.target.value)}
+                onChange={e => updateNote('content', e.target.value)}
                 placeholder="Escreva sua anotação aqui..."
                 style={{
                   flex: 1,
