@@ -166,60 +166,9 @@ export default function MediaArea() {
     const selectedMedia = (mediaList || []).filter(m => m && selectedIds.includes(m.id));
     if (selectedMedia.length === 0) return;
 
-    const isDesktop = !isMobile;
-
+    const shareText = `Olá! Veja estas opções da Realce Film:\n\n${selectedMedia.map(m => `*${m.title || 'Mídia'}*\n${m.url}`).join('\n\n')}`;
+    
     try {
-      // Check if file sharing is supported (mostly mobile)
-      if (navigator.share && navigator.canShare) {
-        const files: File[] = [];
-        const mediaToShare = selectedMedia.slice(0, 5);
-        
-        for (const item of mediaToShare) {
-          try {
-            // Using { mode: 'cors' } and a cache-busting param to avoid cached CORS issues
-            const response = await fetch(`${item.url}${item.url.includes('?') ? '&' : '?'}t=${Date.now()}`, {
-              mode: 'cors',
-              credentials: 'omit'
-            });
-            const blob = await response.blob();
-            const fileName = (item.title || 'midia').replace(/[^a-z0-9]/gi, '_').toLowerCase();
-            const extension = item.type === 'video' ? 'mp4' : 'jpg';
-            const file = new File([blob], `${fileName}.${extension}`, { type: blob.type });
-            files.push(file);
-          } catch (e) {
-            console.error('Error fetching file for share:', e);
-          }
-        }
-
-        if (files.length > 0 && navigator.canShare({ files })) {
-          await navigator.share({
-            files,
-            title: 'Realce Film - Mídias',
-            text: 'Enviando arquivos em anexo...'
-          });
-          return;
-        }
-      }
-
-      // If we are on Desktop or sharing failed, and we have items, let's offer to download
-      if (isDesktop) {
-        if (window.confirm('No computador, para enviar como foto real, é necessário baixar os arquivos e anexar manualmente no WhatsApp. Deseja baixar agora?')) {
-          for (const item of selectedMedia) {
-            const link = document.createElement('a');
-            link.href = item.url;
-            link.download = item.title || 'midia';
-            link.target = '_blank';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-          }
-          return;
-        }
-      }
-
-      // Fallback: Share as links
-      const shareText = `Olá! Veja estas opções da Realce Film:\n\n${selectedMedia.map(m => `*${m.title || 'Mídia'}*\n${m.url}`).join('\n\n')}`;
-      
       if (navigator.share) {
         await navigator.share({
           title: 'Realce Film - Mídias',
@@ -227,13 +176,12 @@ export default function MediaArea() {
         });
       } else {
         await navigator.clipboard.writeText(shareText);
-        alert('Links copiados! Cole no WhatsApp (Ctrl+V).');
+        alert('Links copiados para a área de transferência!');
       }
     } catch (err) {
       console.error('Error sharing:', err);
-      const shareText = `Olá! Veja estas opções da Realce Film:\n\n${selectedMedia.map(m => `*${m.title || 'Mídia'}*\n${m.url}`).join('\n\n')}`;
       await navigator.clipboard.writeText(shareText);
-      alert('Houve um erro ao processar os arquivos. Os links foram copiados para sua área de transferência.');
+      alert('Links copiados para a área de transferência!');
     }
   };
 
@@ -597,51 +545,48 @@ export default function MediaArea() {
               borderRadius: '16px',
               boxShadow: '0 8px 32px rgba(0, 102, 255, 0.2)'
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
                 <span style={{ fontWeight: 600, fontSize: isMobile ? '0.9rem' : '1rem' }}>{selectedIds.length} selecionados</span>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button 
-                    onClick={shareOnWhatsApp}
-                    style={{
-                      background: '#25D366',
-                      color: 'white',
-                      padding: isMobile ? '8px' : '10px 16px',
-                      borderRadius: '12px',
-                      fontWeight: 700,
-                      fontSize: isMobile ? '0.85rem' : '1rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      boxShadow: '0 4px 12px rgba(37, 211, 102, 0.3)'
-                    }}
-                    title="Enviar apenas os links via WhatsApp"
-                  >
-                    <MessageCircle size={isMobile ? 18 : 20} />
-                    {!isMobile && 'WhatsApp (Links)'}
-                  </button>
-                  <button 
-                    onClick={handleGenericShare}
-                    style={{
-                      background: 'var(--primary)',
-                      color: 'white',
-                      padding: isMobile ? '8px' : '10px 16px',
-                      borderRadius: '12px',
-                      fontWeight: 700,
-                      fontSize: isMobile ? '0.85rem' : '1rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      boxShadow: '0 4px 12px rgba(0, 102, 255, 0.3)'
-                    }}
-                    title="Enviar como anexo (Foto/Vídeo real)"
-                  >
-                    <Share2 size={isMobile ? 18 : 20} />
-                    {!isMobile && 'Arquivos (Anexo)'}
-                  </button>
-                </div>
               </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '8px' }}>
-                <strong>Links:</strong> Envia URLs de visualização rápida. <strong>Arquivos:</strong> Baixa e anexa o arquivo original.
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button 
+                  onClick={shareOnWhatsApp}
+                  style={{
+                    background: '#25D366',
+                    color: 'white',
+                    padding: isMobile ? '8px' : '10px 16px',
+                    borderRadius: '12px',
+                    fontWeight: 700,
+                    fontSize: isMobile ? '0.85rem' : '1rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    boxShadow: '0 4px 12px rgba(37, 211, 102, 0.3)'
+                  }}
+                  title="Enviar via WhatsApp"
+                >
+                  <MessageCircle size={isMobile ? 18 : 20} />
+                  WhatsApp
+                </button>
+                <button 
+                  onClick={handleGenericShare}
+                  style={{
+                    background: 'var(--primary)',
+                    color: 'white',
+                    padding: isMobile ? '8px' : '10px 16px',
+                    borderRadius: '12px',
+                    fontWeight: 700,
+                    fontSize: isMobile ? '0.85rem' : '1rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    boxShadow: '0 4px 12px rgba(0, 102, 255, 0.3)'
+                  }}
+                  title="Mais Opções de Compartilhamento"
+                >
+                  <Share2 size={isMobile ? 18 : 20} />
+                  Compartilhar
+                </button>
               </div>
             </div>
           </motion.div>
