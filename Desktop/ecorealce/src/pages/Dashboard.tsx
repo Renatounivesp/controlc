@@ -166,7 +166,7 @@ function DashboardItemCard({ item, isEditMode, removeItem, onEdit, index, moveIt
 }
 
 export default function Dashboard() {
-  const { items, addItem, removeItem, updateItems, updateItem, fetchItems, syncData, pushToCloud, resetToDefaults, isEditMode, setIsEditMode } = useDashboardStore();
+  const { items, addItem, removeItem, updateItems, updateItem, fetchItems, syncData, pushToCloud, isEditMode, setIsEditMode } = useDashboardStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
