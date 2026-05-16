@@ -169,13 +169,9 @@ function DashboardItemCard({ item, isEditMode, removeItem, onEdit, index, moveIt
 export default function Dashboard() {
   const { items, addItem, removeItem, updateItems, updateItem, fetchItems, isEditMode, setIsEditMode } = useDashboardStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+
+
   const [editingItem, setEditingItem] = useState<DashboardItem | null>(null);
   const [formData, setFormData] = useState<Partial<DashboardItem>>({
     title: '',
