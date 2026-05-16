@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, X, Pencil, Image as ImageIcon, Cloud } from 'lucide-react';
+import { Plus, Trash2, X, Pencil, Image as ImageIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import GlassCard from '../components/GlassCard';
 import { useDashboardStore, getIconByName, type DashboardItem } from '../store/useDashboardStore';
@@ -167,7 +167,7 @@ function DashboardItemCard({ item, isEditMode, removeItem, onEdit, index, moveIt
 }
 
 export default function Dashboard() {
-  const { items, addItem, removeItem, updateItems, updateItem, fetchItems, syncData, pushToCloud, isEditMode, setIsEditMode } = useDashboardStore();
+  const { items, addItem, removeItem, updateItems, updateItem, fetchItems, isEditMode, setIsEditMode } = useDashboardStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 

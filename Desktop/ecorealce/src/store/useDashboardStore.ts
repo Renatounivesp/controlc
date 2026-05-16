@@ -137,16 +137,6 @@ export const useDashboardStore = create<DashboardState>()(
       },
       
       resetToDefaults: async () => {
-        // ... (mantém lógica de reset se necessário em Settings)
-      },
-
-      pushToCloud: async () => {
-        const items = get().items;
-        await supabase.from('shortcuts').delete().not('id', 'is', null);
-        await supabase.from('shortcuts').insert(items);
-      },
-      
-      resetToDefaults: async () => {
         const defaults = [
           { id: 'photos', title: 'Fotos', iconName: 'Image', link: '/media?tab=photos', color: '#667eea', is_quick_access: true, order_index: 0 },
           { id: 'videos', title: 'Vídeos', iconName: 'Video', link: '/media?tab=videos', color: '#f5576c', is_quick_access: true, order_index: 1 },
