@@ -11,7 +11,6 @@ function formatDate(ts: number) {
 export default function Notepad() {
   const { notes, isLoading, fetchNotes, addNote, updateNote, removeNote } = useNoteStore();
   const [activeId, setActiveId] = useState<string | null>(null);
-  const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     fetchNotes();
