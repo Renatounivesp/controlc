@@ -23,6 +23,8 @@ interface DashboardState {
   isLoading: boolean;
   isEditMode: boolean;
   setIsEditMode: (value: boolean) => void;
+  isAddModalOpen: boolean;
+  setIsAddModalOpen: (value: boolean) => void;
   fetchItems: () => Promise<void>;
   addItem: (item: DashboardItem) => Promise<void>;
   removeItem: (id: string) => Promise<void>;
@@ -41,9 +43,11 @@ export const useDashboardStore = create<DashboardState>()(
       items: [],
       isLoading: false,
       isEditMode: false,
+      isAddModalOpen: false,
       theme: 'dark',
       
       setIsEditMode: (isEditMode) => set({ isEditMode }),
+      setIsAddModalOpen: (isAddModalOpen) => set({ isAddModalOpen }),
 
       fetchItems: async () => {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;

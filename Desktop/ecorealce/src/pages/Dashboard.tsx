@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, X, Pencil, Image as ImageIcon } from 'lucide-react';
+import { Plus, Trash2, X, Pencil, Image as ImageIcon, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import GlassCard from '../components/GlassCard';
 import { useDashboardStore, getIconByName, type DashboardItem } from '../store/useDashboardStore';
@@ -168,8 +168,7 @@ function DashboardItemCard({ item, isEditMode, removeItem, onEdit, index, moveIt
 }
 
 export default function Dashboard() {
-  const { items, addItem, removeItem, updateItems, updateItem, fetchItems, isEditMode, setIsEditMode } = useDashboardStore();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { items, addItem, removeItem, updateItems, updateItem, fetchItems, isEditMode, setIsEditMode, isAddModalOpen, setIsAddModalOpen } = useDashboardStore();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   useEffect(() => {
@@ -196,7 +195,7 @@ export default function Dashboard() {
   const handleOpenAdd = () => {
     setEditingItem(null);
     setFormData({ title: '', link: '', iconName: 'Globe', color: '#0066ff', imageUrl: '' });
-    setIsModalOpen(true);
+    setIsAddModalOpen(true);
   };
 
   const handleOpenEdit = (item: DashboardItem) => {
@@ -231,11 +230,10 @@ export default function Dashboard() {
         await updateItem(editingItem.id, itemData);
       } else {
         await addItem({
-          id: Math.random().toString(36).substr(2, 9),
           ...itemData as any
         });
       }
-      setIsModalOpen(false);
+      setIsAddModalOpen(false);
     }
   };
 
@@ -475,7 +473,7 @@ export default function Dashboard() {
 
       {/* Add/Edit Modal */}
       <AnimatePresence>
-        {isModalOpen && (
+        {isAddModalOpen && (
           <div style={{
             position: 'fixed',
             inset: 0,
@@ -489,7 +487,7 @@ export default function Dashboard() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setIsModalOpen(false)}
+              onClick={() => setIsAddModalOpen(false)}
               style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)' }}
             />
             <motion.div
@@ -501,7 +499,7 @@ export default function Dashboard() {
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
                 <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>{editingItem ? 'Editar Atalho' : 'Novo Atalho'}</h2>
-                <button onClick={() => setIsModalOpen(false)} style={{ color: 'var(--text-muted)' }}><X /></button>
+                <button onClick={() => setIsAddModalOpen(false)} style={{ color: 'var(--text-muted)' }}><X /></button>
               </div>
 
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -628,39 +626,39 @@ export default function Dashboard() {
         )}
       </AnimatePresence>
 
-      {/* Floating Add Button */}
-      <AnimatePresence>
-        {!isEditMode && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => { setIsEditMode(true); setTimeout(() => handleOpenAdd(), 100); }}
-            title="Adicionar novo atalho"
-            style={{
-              position: 'fixed',
-              bottom: '28px',
-              right: '28px',
-              width: '56px',
-              height: '56px',
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%)',
-              color: 'white',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 8px 25px rgba(0, 102, 255, 0.45)',
-              cursor: 'pointer',
-              zIndex: 500,
-              border: 'none',
-            }}
-          >
-            <Plus size={24} />
-          </motion.button>
-        )}
-      </AnimatePresence>
+      {/* Floating Scroll Down Button */}
+      <motion.button
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={() => {
+          const mainContent = document.querySelector('.main-content');
+          if (mainContent) {
+            mainContent.scrollTo({ top: mainContent.scrollHeight, behavior: 'smooth' });
+          } else {
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+          }
+        }}
+        title="Rolar para baixo"
+        style={{
+          position: 'fixed',
+          bottom: '32px',
+          right: '32px',
+          width: '56px',
+          height: '56px',
+          borderRadius: '50%',
+          background: 'linear-gradient(135deg, #1e1e2e 0%, #12121a 100%)',
+          color: 'var(--text-muted)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 8px 25px rgba(0, 0, 0, 0.4)',
+          cursor: 'pointer',
+          zIndex: 500,
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+        }}
+      >
+        <ChevronDown size={24} />
+      </motion.button>
     </div>
   );
 }

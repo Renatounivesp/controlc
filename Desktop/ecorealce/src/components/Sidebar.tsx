@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Image, Link2, FileText, Settings as SettingsIcon, LogOut, X } from 'lucide-react';
+import { Home, Image, Link2, FileText, Settings as SettingsIcon, LogOut, X, Plus } from 'lucide-react';
+import { useDashboardStore } from '../store/useDashboardStore';
 
 const navItems = [
   { name: 'Dashboard', path: '/', icon: Home },
@@ -45,6 +46,44 @@ export default function Sidebar({ onClose, isMobile }: SidebarProps) {
       </div>
 
       <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {/* Adicionar Button inside Menu */}
+        <button
+          onClick={() => {
+            useDashboardStore.getState().setIsAddModalOpen(true);
+            if (onClose) onClose();
+          }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '14px 12px',
+            borderRadius: '16px',
+            color: 'white',
+            backgroundColor: 'rgba(0, 102, 255, 0.15)',
+            border: '1px solid rgba(0, 102, 255, 0.3)',
+            transition: 'all 0.2s',
+            fontWeight: 600,
+            marginBottom: '12px',
+            boxShadow: '0 4px 15px rgba(0, 102, 255, 0.1)'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 102, 255, 0.25)'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 102, 255, 0.15)'}
+        >
+          <div style={{ 
+            width: '32px', 
+            height: '32px', 
+            borderRadius: '10px', 
+            background: 'var(--primary)', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            boxShadow: '0 0 10px rgba(0, 102, 255, 0.5)'
+          }}>
+            <Plus size={18} color="white" strokeWidth={3} />
+          </div>
+          Adicionar Atalho
+        </button>
+
         {navItems.map((item) => {
           const isActive = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
           const Icon = item.icon;
