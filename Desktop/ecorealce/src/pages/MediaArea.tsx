@@ -5,10 +5,14 @@ import { useMediaStore, type MediaItem } from '../store/useMediaStore';
 import { Image as ImageIcon, Video, CheckCircle2, X, Plus, Trash2, ChevronDown, ChevronUp, Pencil, Save, Share2, Eye, MessageCircle } from 'lucide-react';
 
 export default function MediaArea() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { categories, mediaList, addCategory, removeCategory, addMedia, removeMedia, updateMedia, fetchMedia, isLoading } = useMediaStore();
-  const initialTab = searchParams.get('tab') === 'videos' ? 'videos' : 'photos';
+  const initialTab = (searchParams.get('tab') as 'photos' | 'videos') || 'photos';
   const [activeTab, setActiveTab] = useState<'photos' | 'videos'>(initialTab);
+
+  useEffect(() => {
+    setSearchParams({ tab: activeTab }, { replace: true });
+  }, [activeTab, setSearchParams]);
   const [activeCategory, setActiveCategory] = useState('Todos');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [isAddingCategory, setIsAddingCategory] = useState(false);
@@ -151,20 +155,22 @@ export default function MediaArea() {
   };
 
   const shareOnWhatsApp = () => {
-    const selectedMedia = mediaList.filter(m => selectedIds.includes(m.id));
-    const message = `Olá! Veja estas opções da Realce Film:\n\n${selectedMedia.map(m => `*${m.title}*\n${m.url}`).join('\n\n')}`;
+    const selectedMedia = (mediaList || []).filter(m => m && selectedIds.includes(m.id));
+    if (selectedMedia.length === 0) return;
+    const message = `Olá! Veja estas opções da Realce Film:\n\n${selectedMedia.map(m => `*${m.title || 'Mídia'}*\n${m.url}`).join('\n\n')}`;
     const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
   };
 
   const handleGenericShare = async () => {
-    const selectedMedia = mediaList.filter(m => selectedIds.includes(m.id));
+    const selectedMedia = (mediaList || []).filter(m => m && selectedIds.includes(m.id));
     if (selectedMedia.length === 0) return;
 
+    const firstUrl = selectedMedia[0]?.url || '';
     const shareData = {
       title: 'Realce Film - Mídias',
-      text: `Olá! Veja estas mídias da Realce Film:\n\n${selectedMedia.map(m => m.title).join(', ')}`,
-      url: selectedMedia[0].url // Navigator.share usually only takes one URL, we'll share the first or a list in text
+      text: `Olá! Veja estas mídias da Realce Film:\n\n${selectedMedia.map(m => m.title || 'Mídia').join(', ')}`,
+      url: firstUrl
     };
 
     try {
@@ -345,92 +351,98 @@ export default function MediaArea() {
         gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
         gap: '20px',
       }}>
-        {filteredMedia.map((media, index) => {
-          if (!media || !media.url) return null;
-          const isSelected = selectedIds.includes(media.id);
-          return (
-            <motion.div
-              key={media.id}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
-              className="glass"
-              onClick={() => toggleSelection(media.id)}
-              style={{ 
-                overflow: 'hidden', 
-                padding: 0, 
-                cursor: 'pointer',
-                border: isSelected ? '2px solid var(--primary)' : '1px solid rgba(255, 255, 255, 0.08)',
-                position: 'relative'
-              }}
-              whileHover={{ y: -4 }}
-            >
-              <div style={{ height: '180px', width: '100%', position: 'relative', background: '#000' }}>
-                {media.type === 'video' ? (
-                  <video 
-                    src={media.url} 
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: isSelected ? 0.6 : 1 }} 
-                    muted 
-                    playsInline
-                    onMouseOver={e => e.currentTarget.play()}
-                    onMouseOut={e => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }}
-                  />
-                ) : (
-                  <img src={media.url} alt={media.title} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: isSelected ? 0.6 : 1 }} />
-                )}
-                {isSelected && (
-                  <div style={{ position: 'absolute', top: '12px', right: '12px', color: 'var(--primary)', background: 'white', borderRadius: '50%', zIndex: 20 }}>
-                    <CheckCircle2 size={24} fill="currentColor" color="white" />
+        {filteredMedia.length === 0 && !isLoading ? (
+          <div style={{ gridColumn: '1/-1', padding: '60px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+            <p>Nenhuma mídia encontrada nesta categoria.</p>
+          </div>
+        ) : (
+          filteredMedia.map((media, index) => {
+            if (!media || !media.url) return null;
+            const isSelected = selectedIds.includes(media.id);
+            return (
+              <motion.div
+                key={media.id}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                className="glass"
+                onClick={() => toggleSelection(media.id)}
+                style={{ 
+                  overflow: 'hidden', 
+                  padding: 0, 
+                  cursor: 'pointer',
+                  border: isSelected ? '2px solid var(--primary)' : '1px solid rgba(255, 255, 255, 0.08)',
+                  position: 'relative'
+                }}
+                whileHover={{ y: -4 }}
+              >
+                <div style={{ height: '180px', width: '100%', position: 'relative', background: '#000' }}>
+                  {media.type === 'video' ? (
+                    <video 
+                      src={media.url} 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: isSelected ? 0.6 : 1 }} 
+                      muted 
+                      playsInline
+                      onMouseOver={e => e.currentTarget.play()}
+                      onMouseOut={e => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }}
+                    />
+                  ) : (
+                    <img src={media.url} alt={media.title} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: isSelected ? 0.6 : 1 }} />
+                  )}
+                  {isSelected && (
+                    <div style={{ position: 'absolute', top: '12px', right: '12px', color: 'var(--primary)', background: 'white', borderRadius: '50%', zIndex: 20 }}>
+                      <CheckCircle2 size={24} fill="currentColor" color="white" />
+                    </div>
+                  )}
+                  <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '8px', zIndex: 20, opacity: isSelected ? 0 : 1, transition: 'opacity 0.2s' }}>
+                    <button 
+                      onClick={(e) => handleOpenEdit(media, e)}
+                      style={{ 
+                        color: 'white', 
+                        background: 'rgba(0, 102, 255, 0.8)', 
+                        borderRadius: '50%',
+                        width: '32px',
+                        height: '32px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                      title="Editar"
+                    >
+                      <Pencil size={16} />
+                    </button>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setEditingMedia(media); setEditFormData({ title: media.title, category: media.category }); }}
+                      style={{ 
+                        color: 'white', 
+                        background: 'rgba(255, 255, 255, 0.2)', 
+                        backdropFilter: 'blur(4px)',
+                        borderRadius: '50%',
+                        width: '32px',
+                        height: '32px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                      title="Visualizar"
+                    >
+                      <Eye size={16} />
+                    </button>
                   </div>
-                )}
-                <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '8px', zIndex: 20, opacity: isSelected ? 0 : 1, transition: 'opacity 0.2s' }}>
-                  <button 
-                    onClick={(e) => handleOpenEdit(media, e)}
-                    style={{ 
-                      color: 'white', 
-                      background: 'rgba(0, 102, 255, 0.8)', 
-                      borderRadius: '50%',
-                      width: '32px',
-                      height: '32px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                    title="Editar"
-                  >
-                    <Pencil size={16} />
-                  </button>
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); setEditingMedia(media); setEditFormData({ title: media.title, category: media.category }); }}
-                    style={{ 
-                      color: 'white', 
-                      background: 'rgba(255, 255, 255, 0.2)', 
-                      backdropFilter: 'blur(4px)',
-                      borderRadius: '50%',
-                      width: '32px',
-                      height: '32px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                    title="Visualizar"
-                  >
-                    <Eye size={16} />
-                  </button>
+                  {media.type === 'video' && !isSelected && (
+                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(0,0,0,0.5)', borderRadius: '50%', padding: '12px', pointerEvents: 'none' }}>
+                      <Video size={24} color="white" />
+                    </div>
+                  )}
                 </div>
-                {media.type === 'video' && !isSelected && (
-                  <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(0,0,0,0.5)', borderRadius: '50%', padding: '12px', pointerEvents: 'none' }}>
-                    <Video size={24} color="white" />
-                  </div>
-                )}
-              </div>
-              <div style={{ padding: '12px' }}>
-                <span style={{ fontSize: '0.7rem', color: isSelected ? 'var(--primary)' : 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>{media.category}</span>
-                <h3 style={{ fontSize: '0.9rem', fontWeight: 500, color: 'white', marginTop: '2px' }}>{media.title}</h3>
-              </div>
-            </motion.div>
-          );
-        })}
+                <div style={{ padding: '12px' }}>
+                  <span style={{ fontSize: '0.7rem', color: isSelected ? 'var(--primary)' : 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>{media.category}</span>
+                  <h3 style={{ fontSize: '0.9rem', fontWeight: 500, color: 'white', marginTop: '2px' }}>{media.title}</h3>
+                </div>
+              </motion.div>
+            );
+          })
+        )}
       </div>
 
       <AnimatePresence>
