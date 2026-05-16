@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'react-router-dom';
 import { useMediaStore, type MediaItem } from '../store/useMediaStore';
-import { Image as ImageIcon, Video, CheckCircle2, MessageCircle, X, Plus, Trash2, ChevronDown, ChevronUp, Pencil, Save, Share2 } from 'lucide-react';
+import { Image as ImageIcon, Video, CheckCircle2, X, Plus, Trash2, ChevronDown, ChevronUp, Pencil, Save, Share2 } from 'lucide-react';
 
 export default function MediaArea() {
   const [searchParams] = useSearchParams();
