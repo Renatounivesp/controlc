@@ -276,7 +276,6 @@ export default function Dashboard() {
             {(supabase as any).isMock ? '⚠️ Erro de Conexão: Contate o Suporte' : 'Bem-vindo ao painel de controle'}
           </p>
         </div>
-        </div>
       </div>
 
 
