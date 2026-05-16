@@ -45,7 +45,24 @@ export const useDashboardStore = create<DashboardState>()(
 
       fetchItems: async () => {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        if (!supabaseUrl) return;
+        const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        
+        if (!supabaseUrl || !supabaseKey) {
+          console.warn('Supabase credentials missing. Running in local mode.');
+          if (get().items.length === 0) {
+             const defaults: DashboardItem[] = [
+                { id: 'photos', title: 'Fotos', iconName: 'Image', link: '/media?tab=photos', color: '#667eea', is_quick_access: true, order_index: 0 },
+                { id: 'videos', title: 'Vídeos', iconName: 'Video', link: '/media?tab=videos', color: '#f5576c', is_quick_access: true, order_index: 1 },
+                { id: 'orcamentos', title: 'Orçamentos', iconName: 'FileText', link: '/documents', color: '#4facfe', is_quick_access: true, order_index: 2 },
+                { id: 'calculator', title: 'Calculadora', iconName: 'Calculator', link: '/calculator', color: '#38ef7d', is_quick_access: true, order_index: 3 },
+                { id: 'notepad', title: 'Anotações', iconName: 'NotebookPen', link: '/notepad', color: '#ffd200', is_quick_access: true, order_index: 4 },
+                { id: 'agenda', title: 'Agenda', iconName: 'Calendar', link: '/agenda', color: '#00c6ff', is_quick_access: true, order_index: 5 },
+                { id: 'textos', title: 'Textos', iconName: 'Type', link: '/notepad', color: '#a855f7', is_quick_access: true, order_index: 6 },
+              ];
+              set({ items: defaults });
+          }
+          return;
+        }
 
         set({ isLoading: true });
         try {
@@ -57,19 +74,14 @@ export const useDashboardStore = create<DashboardState>()(
           if (error) throw error;
 
           if (data && data.length > 0) {
-            // DB has data, use it
             set({ items: data, isLoading: false });
           } else {
-            // DB is empty, check if we have something in local storage (from persist)
+            // Se o DB estiver vazio mas o local tiver dados, vamos subir pro DB
             const localItems = get().items;
             if (localItems && localItems.length > 0) {
-              // We have local data but DB is empty, sync local to DB
-              console.log('Syncing local items to Supabase...');
               await supabase.from('shortcuts').insert(localItems);
-              set({ isLoading: false });
             } else {
-              // Both are empty, use defaults
-              console.log('Initializing with default items...');
+              // Inicializar com padrões se tudo estiver vazio
               const defaults: DashboardItem[] = [
                 { id: 'photos', title: 'Fotos', iconName: 'Image', link: '/media?tab=photos', color: '#667eea', is_quick_access: true, order_index: 0 },
                 { id: 'videos', title: 'Vídeos', iconName: 'Video', link: '/media?tab=videos', color: '#f5576c', is_quick_access: true, order_index: 1 },
@@ -79,9 +91,10 @@ export const useDashboardStore = create<DashboardState>()(
                 { id: 'agenda', title: 'Agenda', iconName: 'Calendar', link: '/agenda', color: '#00c6ff', is_quick_access: true, order_index: 5 },
                 { id: 'textos', title: 'Textos', iconName: 'Type', link: '/notepad', color: '#a855f7', is_quick_access: true, order_index: 6 },
               ];
-              set({ items: defaults, isLoading: false });
+              set({ items: defaults });
               await supabase.from('shortcuts').insert(defaults);
             }
+            set({ isLoading: false });
           }
         } catch (err) {
           console.error('Error fetching dashboard items:', err);
@@ -93,7 +106,12 @@ export const useDashboardStore = create<DashboardState>()(
         const newItem = { ...item, order_index: get().items.length };
         set((state) => ({ items: [...state.items, newItem] }));
         
-        await supabase.from('shortcuts').insert([newItem]);
+        const { error } = await supabase.from('shortcuts').insert([newItem]);
+        if (error) {
+          console.error('Error adding item to Supabase:', error);
+        } else {
+          console.log('Item added successfully to Supabase');
+        }
       },
 
       removeItem: async (id) => {
