@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings2, Plus, Trash2, X, Check, Pencil, Image as ImageIcon, Video, FileText, Calculator, NotebookPen } from 'lucide-react';
+import { Settings2, Plus, Trash2, X, Check, Pencil, Image as ImageIcon, Video, FileText, Calculator, NotebookPen, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import GlassCard from '../components/GlassCard';
 import { useDashboardStore, getIconByName, type DashboardItem } from '../store/useDashboardStore';
@@ -280,6 +280,16 @@ export default function Dashboard() {
       accent: '#ffd200',
       path: '/notepad',
       description: 'Bloco de notas'
+    },
+    {
+      id: 'agenda',
+      label: 'Agenda',
+      Icon: Calendar,
+      gradient: 'linear-gradient(135deg, #00c6ff 0%, #0072ff 100%)',
+      glow: 'rgba(0, 198, 255, 0.5)',
+      accent: '#00c6ff',
+      path: '/agenda',
+      description: 'Compromissos'
     },
   ];
 

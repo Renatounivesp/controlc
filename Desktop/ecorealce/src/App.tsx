@@ -8,6 +8,7 @@ import Documents from './pages/Documents';
 import Settings from './pages/Settings';
 import Calculator from './pages/Calculator';
 import Notepad from './pages/Notepad';
+import Agenda from './pages/Agenda';
 
 function App() {
   // Simple auth mock for now
@@ -27,6 +28,7 @@ function App() {
           <Route path="settings" element={<Settings />} />
           <Route path="calculator" element={<Calculator />} />
           <Route path="notepad" element={<Notepad />} />
+          <Route path="agenda" element={<Agenda />} />
           {/* Add more routes here */}
         </Route>
       </Routes>
