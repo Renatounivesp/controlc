@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'react-router-dom';
 import { useMediaStore, type MediaItem } from '../store/useMediaStore';
-import { Image as ImageIcon, Video, CheckCircle2, X, Plus, Trash2, ChevronDown, ChevronUp, Pencil, Save, Share2, Eye, MessageCircle, Folder, ArrowLeft } from 'lucide-react';
+import { Image as ImageIcon, Video, CheckCircle2, X, Plus, Trash2, ChevronDown, ChevronUp, Pencil, Save, Eye, MessageCircle, Folder, ArrowLeft } from 'lucide-react';
 
 export default function MediaArea() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -155,13 +155,7 @@ export default function MediaArea() {
     }
   };
 
-  const shareOnWhatsApp = () => {
-    const selectedMedia = (mediaList || []).filter(m => m && selectedIds.includes(m.id));
-    if (selectedMedia.length === 0) return;
-    const message = `Olá! Veja estas opções da Realce Film:\n\n${selectedMedia.map(m => `*${m.title || 'Mídia'}*\n${m.url}`).join('\n\n')}`;
-    const encodedMessage = encodeURIComponent(message);
-    window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
-  };
+
 
   const handleGenericShare = async () => {
     const selectedMedia = (mediaList || []).filter(m => m && selectedIds.includes(m.id));
