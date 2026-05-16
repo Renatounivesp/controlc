@@ -49,7 +49,7 @@ export default function Layout() {
         transition: 'left 0.3s ease',
         width: '280px',
       }}>
-        <Sidebar onClose={() => setIsSidebarOpen(false)} />
+        <Sidebar onClose={() => setIsSidebarOpen(false)} isMobile={true} />
       </div>
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>

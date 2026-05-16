@@ -10,19 +10,25 @@ const navItems = [
 
 interface SidebarProps {
   onClose?: () => void;
+  isMobile?: boolean;
 }
 
-export default function Sidebar({ onClose }: SidebarProps) {
+export default function Sidebar({ onClose, isMobile }: SidebarProps) {
   const location = useLocation();
 
   return (
-    <aside className="glass" style={{
-      width: '280px',
-      height: 'calc(100vh - 32px)',
-      margin: '16px',
+    <aside className={isMobile ? "" : "glass"} style={{
+      width: isMobile ? '100%' : '280px',
+      height: isMobile ? '100%' : 'calc(100vh - 32px)',
+      margin: isMobile ? '0' : '16px',
       display: 'flex',
       flexDirection: 'column',
       padding: '24px 16px',
+      backgroundColor: isMobile ? 'var(--bg-dark-secondary)' : undefined,
+      borderRadius: isMobile ? '0 24px 24px 0' : '28px',
+      boxShadow: isMobile ? '20px 0 50px rgba(0,0,0,0.5)' : undefined,
+      border: isMobile ? 'none' : undefined,
+      borderRight: isMobile ? '1px solid var(--border-color)' : undefined
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 12px', marginBottom: '32px' }}>
         <div>
