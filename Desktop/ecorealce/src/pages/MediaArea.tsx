@@ -185,33 +185,53 @@ export default function MediaArea() {
 
   return (
     <div style={{ paddingBottom: selectedIds.length > 0 ? '100px' : '0' }}>
-      <header style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+      <header style={{ 
+        marginBottom: '32px', 
+        display: 'flex', 
+        flexDirection: isMobile ? 'column' : 'row',
+        justifyContent: 'space-between', 
+        alignItems: isMobile ? 'flex-start' : 'center', 
+        gap: '20px' 
+      }}>
         <div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '8px' }}>Área de Mídias</h1>
-          <p style={{ color: 'var(--text-muted)' }}>Organize fotos por categoria e envie para clientes.</p>
+          <h1 style={{ fontSize: isMobile ? '1.5rem' : '1.75rem', fontWeight: 700, marginBottom: '8px' }}>Área de Mídias</h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: isMobile ? '0.85rem' : '1rem' }}>Organize fotos por categoria e envie para clientes.</p>
         </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div style={{ display: 'flex', gap: '10px', width: isMobile ? '100%' : 'auto', flexWrap: 'wrap' }}>
           {selectedIds.length > 0 && (
             <button 
               onClick={() => setSelectedIds([])}
-              style={{ padding: '12px 20px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px' }}
+              style={{ 
+                padding: '8px 12px', 
+                color: '#ef4444', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '6px',
+                fontSize: '0.85rem',
+                background: 'rgba(239, 68, 68, 0.1)',
+                borderRadius: '10px'
+              }}
             >
-              <X size={20} /> Limpar ({selectedIds.length})
+              <X size={16} /> Limpar ({selectedIds.length})
             </button>
           )}
           <label className="glass" style={{ 
-            padding: '12px 24px', 
+            flex: isMobile ? 1 : 'initial',
+            padding: isMobile ? '10px 16px' : '12px 24px', 
             color: 'white', 
             fontWeight: 600, 
             background: 'var(--primary)', 
             cursor: isLoading ? 'not-allowed' : 'pointer',
             display: 'flex',
             alignItems: 'center',
+            justifyContent: 'center',
             gap: '8px',
             borderRadius: '12px',
-            opacity: isLoading ? 0.7 : 1
+            opacity: isLoading ? 0.7 : 1,
+            fontSize: isMobile ? '0.85rem' : '1rem',
+            whiteSpace: 'nowrap'
           }}>
-            {activeTab === 'photos' ? <ImageIcon size={20} /> : <Video size={20} />} 
+            {activeTab === 'photos' ? <ImageIcon size={18} /> : <Video size={18} />} 
             {isLoading ? 'Subindo...' : `+ Subir ${activeTab === 'photos' ? 'Foto' : 'Vídeo'}`}
             <input 
               type="file" 
@@ -372,45 +392,48 @@ export default function MediaArea() {
       <AnimatePresence>
         {selectedIds.length > 0 && (
           <motion.div
-            initial={{ y: 100 }}
-            animate={{ y: 0 }}
-            exit={{ y: 100 }}
+            initial={{ y: 100, x: '-50%' }}
+            animate={{ y: 0, x: '-50%' }}
+            exit={{ y: 100, x: '-50%' }}
             style={{
               position: 'fixed',
-              bottom: '24px',
+              bottom: isMobile ? '12px' : '24px',
               left: '50%',
-              transform: 'translateX(-50%)',
-              width: '90%',
+              width: '95%',
               maxWidth: '500px',
               zIndex: 100,
             }}
           >
             <div className="glass" style={{ 
-              padding: '16px 24px', 
+              padding: isMobile ? '12px 16px' : '16px 24px', 
               display: 'flex', 
               justifyContent: 'space-between', 
               alignItems: 'center',
-              backgroundColor: 'rgba(10, 10, 15, 0.9)',
-              border: '1px solid var(--primary)'
+              backgroundColor: 'rgba(10, 10, 15, 0.95)',
+              border: '1px solid var(--primary)',
+              borderRadius: '16px',
+              boxShadow: '0 8px 32px rgba(0, 102, 255, 0.2)'
             }}>
               <div>
-                <span style={{ fontWeight: 600, fontSize: '1rem' }}>{selectedIds.length} selecionados</span>
+                <span style={{ fontWeight: 600, fontSize: isMobile ? '0.9rem' : '1rem' }}>{selectedIds.length} selecionados</span>
               </div>
               <button 
                 onClick={shareOnWhatsApp}
                 style={{
-                  background: 'var(--success)',
+                  background: 'var(--primary)',
                   color: 'white',
-                  padding: '10px 20px',
+                  padding: isMobile ? '8px 16px' : '10px 24px',
                   borderRadius: '12px',
+                  fontWeight: 700,
+                  fontSize: isMobile ? '0.85rem' : '1rem',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  fontWeight: 600,
-                  boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)'
+                  boxShadow: '0 4px 12px rgba(0, 102, 255, 0.3)'
                 }}
               >
-                <MessageCircle size={20} /> Enviar WhatsApp
+                <Share2 size={isMobile ? 16 : 20} />
+                {isMobile ? 'Enviar' : 'Enviar WhatsApp'}
               </button>
             </div>
           </motion.div>
