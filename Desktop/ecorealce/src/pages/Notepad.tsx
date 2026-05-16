@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, NotebookPen, Loader2 } from 'lucide-react';
 import { useNoteStore, type Note } from '../store/useNoteStore';
