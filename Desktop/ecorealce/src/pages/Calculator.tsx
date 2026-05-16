@@ -130,7 +130,7 @@ export default function Calculator() {
                   <motion.button
                     key={btn}
                     whileTap={{ scale: 0.92 }}
-                    whileHover={{ brightness: 1.1 }}
+                    whileHover={{ filter: 'brightness(1.1)' }}
                     onClick={() => handleButton(btn)}
                     style={{
                       padding: '0',
