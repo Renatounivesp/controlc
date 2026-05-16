@@ -1,4 +1,4 @@
-import { Plus, ExternalLink, MoreVertical, X, Trash2, Pencil } from 'lucide-react';
+import { Plus, ExternalLink, X, Trash2, Pencil } from 'lucide-react';
 import GlassCard from '../components/GlassCard';
 import { useQuickLinksStore, type QuickLink } from '../store/useQuickLinksStore';
 import { useState, useEffect } from 'react';

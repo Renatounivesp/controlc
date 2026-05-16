@@ -21,7 +21,7 @@ interface QuickLinksState {
 
 export const useQuickLinksStore = create<QuickLinksState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       links: [],
       isLoading: false,
 
