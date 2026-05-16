@@ -6,13 +6,14 @@ import { useDashboardStore, getIconByName, type DashboardItem } from '../store/u
 import { AnimatePresence, motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 
-function DashboardItemCard({ item, isEditMode, removeItem, onEdit, index, moveItem }: { 
+function DashboardItemCard({ item, isEditMode, removeItem, onEdit, index, moveItem, isMobile }: { 
   item: DashboardItem, 
   isEditMode: boolean, 
   removeItem: (id: string) => void,
   onEdit: (item: DashboardItem) => void,
   index: number,
-  moveItem: (dragIndex: number, hoverIndex: number) => void
+  moveItem: (dragIndex: number, hoverIndex: number) => void,
+  isMobile: boolean
 }) {
   const Icon = getIconByName(item.iconName);
 
@@ -43,14 +44,14 @@ function DashboardItemCard({ item, isEditMode, removeItem, onEdit, index, moveIt
           }
         }}
         style={{
-          padding: item.imageUrl ? '0' : '16px',
+          padding: item.imageUrl ? '0' : (isMobile ? '12px' : '16px'),
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           gap: '8px',
           borderRadius: '24px',
-          height: '140px',
+          height: isMobile ? '120px' : '140px',
           border: isEditMode ? '2px dashed var(--primary)' : '1px solid rgba(255,255,255,0.05)',
           backgroundColor: isEditMode ? 'rgba(0,102,255,0.05)' : 'rgba(255,255,255,0.02)',
           textAlign: 'center',
@@ -95,7 +96,7 @@ function DashboardItemCard({ item, isEditMode, removeItem, onEdit, index, moveIt
               justifyContent: 'center',
               marginBottom: '4px'
             }}>
-              <Icon size={32} strokeWidth={2} />
+              <Icon size={isMobile ? 28 : 32} strokeWidth={2} />
             </div>
             <h3 style={{ fontSize: '0.85rem', fontWeight: 600, color: 'white', padding: '0 8px' }}>{item.title}</h3>
           </>
@@ -169,9 +170,13 @@ function DashboardItemCard({ item, isEditMode, removeItem, onEdit, index, moveIt
 export default function Dashboard() {
   const { items, addItem, removeItem, updateItems, updateItem, fetchItems, isEditMode, setIsEditMode } = useDashboardStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-
-
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   const [editingItem, setEditingItem] = useState<DashboardItem | null>(null);
   const [formData, setFormData] = useState<Partial<DashboardItem>>({
     title: '',
@@ -313,7 +318,7 @@ export default function Dashboard() {
                   style={{
                     width: '100%',
                     position: 'relative',
-                    height: '160px',
+                    height: isMobile ? '140px' : '160px',
                     borderRadius: '24px',
                     overflow: 'hidden',
                     cursor: isEditMode ? 'default' : 'pointer',
@@ -323,19 +328,30 @@ export default function Dashboard() {
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '12px',
+                    gap: isMobile ? '10px' : '12px',
                     textAlign: 'center',
-                    padding: '20px',
+                    padding: isMobile ? '16px' : '20px',
                   }}
                 >
                   <div style={{ position: 'absolute', inset: 0, background: gradient, opacity: 0.08 }} />
                   <div style={{ position: 'absolute', top: 0, left: '20%', right: '20%', height: '2px', background: gradient, borderRadius: '0 0 8px 8px', boxShadow: `0 0 20px ${glow}` }} />
-                  <div style={{ width: '60px', height: '60px', borderRadius: '18px', background: gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 8px 25px ${glow}`, position: 'relative', zIndex: 1 }}>
-                    <Icon size={28} color="white" strokeWidth={2} />
+                  <div style={{ 
+                    width: isMobile ? '52px' : '60px', 
+                    height: isMobile ? '52px' : '60px', 
+                    borderRadius: isMobile ? '16px' : '18px', 
+                    background: gradient, 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    boxShadow: `0 8px 25px ${glow}`, 
+                    position: 'relative', 
+                    zIndex: 1 
+                  }}>
+                    <Icon size={isMobile ? 24 : 28} color="white" strokeWidth={2} />
                   </div>
                   <div style={{ position: 'relative', zIndex: 1 }}>
-                    <p style={{ fontSize: '1rem', fontWeight: 700, color: 'white', marginBottom: '2px' }}>{item.title}</p>
-                    <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 400 }}>Acesso Rápido</p>
+                    <p style={{ fontSize: isMobile ? '0.9rem' : '1rem', fontWeight: 700, color: 'white', marginBottom: '2px' }}>{item.title}</p>
+                    <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 400 }}>Acesso Rápido</p>
                   </div>
                 </motion.button>
 
@@ -411,6 +427,7 @@ export default function Dashboard() {
               onEdit={handleOpenEdit}
               index={index}
               moveItem={moveItem}
+              isMobile={isMobile}
             />
           ))}
           {items.length === 0 && !isEditMode && (
