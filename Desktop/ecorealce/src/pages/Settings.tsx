@@ -168,6 +168,54 @@ export default function Settings() {
               </div>
             </GlassCard>
 
+            {/* Manager Mode */}
+            <GlassCard style={{ padding: '16px 24px', border: isEditMode ? '1px solid var(--primary)' : '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{ 
+                    width: '40px', 
+                    height: '40px', 
+                    borderRadius: '10px', 
+                    background: 'rgba(255,255,255,0.03)', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    color: isEditMode ? 'var(--primary)' : 'var(--text-muted)'
+                  }}>
+                    <Settings2 size={20} />
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'white' }}>Modo Gestor</h3>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Ativar edição de atalhos no dashboard</p>
+                  </div>
+                </div>
+                <div 
+                  onClick={() => setIsEditMode(!isEditMode)}
+                  style={{ 
+                    width: '50px',
+                    height: '26px',
+                    background: isEditMode ? 'var(--primary)' : 'rgba(255,255,255,0.1)',
+                    borderRadius: '20px',
+                    position: 'relative',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s'
+                  }}
+                >
+                  <div style={{ 
+                    width: '18px',
+                    height: '18px',
+                    background: 'white',
+                    borderRadius: '50%',
+                    position: 'absolute',
+                    top: '4px',
+                    left: isEditMode ? '28px' : '4px',
+                    transition: 'all 0.3s',
+                    boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
+                  }} />
+                </div>
+              </div>
+            </GlassCard>
+
           </div>
         </div>
       </div>
