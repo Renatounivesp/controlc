@@ -332,7 +332,7 @@ export default function Dashboard() {
                     <p style={{ fontSize: '1rem', fontWeight: 700, color: 'white', marginBottom: '2px' }}>{item.title}</p>
                     <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 400 }}>Acesso Rápido</p>
                   </div>
-                </button>
+                </motion.button>
 
                 {isEditMode && (
                   <div style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', gap: '6px', zIndex: 100 }}>
