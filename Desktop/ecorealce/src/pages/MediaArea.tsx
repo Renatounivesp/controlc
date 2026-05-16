@@ -120,14 +120,22 @@ export default function MediaArea() {
     const files = e.target.files;
     if (!files) return;
 
-    for (const file of Array.from(files)) {
-      const type = file.type.startsWith('video') ? 'video' : 'photo';
-      const itemData = {
-        type: type as 'photo' | 'video',
-        title: file.name,
-        category: activeCategory === 'Todos' ? 'Clientes' : activeCategory,
-      };
-      await addMedia(file, itemData);
+    try {
+      for (const file of Array.from(files)) {
+        const type = file.type.startsWith('video') ? 'video' : 'photo';
+        const itemData = {
+          type: type as 'photo' | 'video',
+          title: file.name,
+          category: activeCategory === 'Todos' ? 'Clientes' : activeCategory,
+        };
+        await addMedia(file, itemData);
+      }
+    } catch (err) {
+      console.error('Upload handler error:', err);
+      alert('Erro crítico no upload. Verifique sua conexão.');
+    } finally {
+      // Clear input so same file can be uploaded again if needed
+      e.target.value = '';
     }
   };
 
@@ -307,10 +315,21 @@ export default function MediaArea() {
               }}
               whileHover={{ y: -4 }}
             >
-              <div style={{ height: '180px', width: '100%', position: 'relative' }}>
-                <img src={media.url} alt={media.title} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: isSelected ? 0.6 : 1 }} />
+              <div style={{ height: '180px', width: '100%', position: 'relative', background: '#000' }}>
+                {media.type === 'video' ? (
+                  <video 
+                    src={media.url} 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: isSelected ? 0.6 : 1 }} 
+                    muted 
+                    playsInline
+                    onMouseOver={e => e.currentTarget.play()}
+                    onMouseOut={e => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }}
+                  />
+                ) : (
+                  <img src={media.url} alt={media.title} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: isSelected ? 0.6 : 1 }} />
+                )}
                 {isSelected && (
-                  <div style={{ position: 'absolute', top: '12px', right: '12px', color: 'var(--primary)', background: 'white', borderRadius: '50%' }}>
+                  <div style={{ position: 'absolute', top: '12px', right: '12px', color: 'var(--primary)', background: 'white', borderRadius: '50%', zIndex: 20 }}>
                     <CheckCircle2 size={24} fill="currentColor" color="white" />
                   </div>
                 )}
@@ -330,13 +349,13 @@ export default function MediaArea() {
                     justifyContent: 'center',
                     opacity: isSelected ? 0 : 1,
                     transition: 'opacity 0.2s',
-                    zIndex: 10
+                    zIndex: 20
                   }}
                 >
                   <Pencil size={16} />
                 </button>
                 {media.type === 'video' && !isSelected && (
-                  <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(0,0,0,0.5)', borderRadius: '50%', padding: '12px' }}>
+                  <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(0,0,0,0.5)', borderRadius: '50%', padding: '12px', pointerEvents: 'none' }}>
                     <Video size={24} color="white" />
                   </div>
                 )}
@@ -417,8 +436,12 @@ export default function MediaArea() {
                 <button onClick={() => setEditingMedia(null)} style={{ color: 'var(--text-muted)' }}><X /></button>
               </div>
 
-              <div style={{ marginBottom: '20px', borderRadius: '12px', overflow: 'hidden', height: '150px' }}>
-                <img src={editingMedia.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <div style={{ marginBottom: '20px', borderRadius: '12px', overflow: 'hidden', height: '180px', background: '#000' }}>
+                {editingMedia.type === 'video' ? (
+                  <video src={editingMedia.url} controls style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                ) : (
+                  <img src={editingMedia.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                )}
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
